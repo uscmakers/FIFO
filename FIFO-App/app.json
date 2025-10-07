@@ -10,10 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.FIFO",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.anonymous.FIFO"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,18 +30,6 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
-        }
-      ],
-      [
         "react-native-scanbot-barcode-scanner-sdk",
         {
           "iOSCameraUsageDescription": "Camera permission is needed to scan barcodes",
@@ -57,13 +42,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "8ec18629-9beb-411b-8d79-953f21a7d002"
-      }
-    },
-    "owner": "rakshetak"
+    }
   }
 }
