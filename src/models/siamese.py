@@ -17,12 +17,12 @@ picam2.set_controls({"AfMode": 2})
 
 # H.264 encode and write to MP4 using ffmpeg
 encoder = H264Encoder(bitrate=8_000_000)  # adjust bitrate to taste
-output = FfmpegOutput("clip.mp4")
+output = FfmpegOutput("clip.mp4") # cleaned up video (better quality)
 
 picam2.start_recording(encoder, output)
 print("Recording...")
 
-time.sleep(10)  # record 10 seconds
+time.sleep(10) # record 10 seconds
 
 picam2.stop_recording()
 print("Saved clip.mp4")
