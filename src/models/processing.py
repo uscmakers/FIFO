@@ -24,7 +24,8 @@ def process(path1: Path, path2: Path):
             break
         
         if(frameCount % 225 == 0):
-            # capture image
+            # capture image at 1st, last, middle frame
+            # extract frame from both videos append to 2 sep lists, later iterate over both lists and perform ML to compare
             print()
 
         # frame tracker
