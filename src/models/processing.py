@@ -10,6 +10,7 @@ def newestMp4(dirPath: Path) -> Path:
     return max(files, key=lambda p: p.stat().st_mtime) # find latest mp4 file
 
 def process(path1: Path, path2: Path):
+    frameCount = 0
     capture1 = cv2.VideoCapture(str(path1))
     capture2 = cv2.VideoCapture(str(path2))
     if not capture1.isOpened() or not capture2.isOpened():
@@ -21,10 +22,17 @@ def process(path1: Path, path2: Path):
         isProcessed2, frame2 = capture2.read()
         if not isProcessed1 or not isProcessed2:
             break
+        
+        if(frameCount % 225 == 0):
+            # capture image
+            print()
+
+        # frame tracker
+        frameCount += 1
 
         # will remove this later
-        cv2.imshow("Processed", frame1)
-        cv2.imshow("Processed", frame2)
+        cv2.imshow("Processed Frame 1:", frame1)
+        cv2.imshow("Processed Frame 2:", frame2)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -41,7 +49,7 @@ def main():
     else:
         vid = newestMp4(Path("~/Downloads").expanduser()) # automatic
 
-    if len(vidPairs > 2):
+    if len(vidPairs) > 2:
         vidPairs.pop(0) # remove first (older) video
 
     vidPairs.append(vid)
