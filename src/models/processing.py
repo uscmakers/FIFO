@@ -13,35 +13,59 @@ def process(path1: Path, path2: Path):
     frameCount = 0
     capture1 = cv2.VideoCapture(str(path1))
     capture2 = cv2.VideoCapture(str(path2))
+
     if not capture1.isOpened() or not capture2.isOpened():
         raise RuntimeError("Could not open")
+    
+    # otherwise, processing continues
     print("Processing... (press q to quit)")
 
-    while True: # so it continuously checks 
-        isProcessed1, frame1 = capture1.read()
-        isProcessed2, frame2 = capture2.read()
-        if not isProcessed1 or not isProcessed2:
+    # get video properties
+    frameCount = int(capture1.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    #print(f"{path1.name}: {fps1:.2f} FPS, {frameCount1} frames")
+    #print(f"{path2.name}: {fps2:.2f} FPS, {frameCount2} frames")
+
+    # get first frame, middle frame, and last frame for both clips (0, 255, 450th frame)
+    framesToCapture = [0, frameCount // 2, frameCount - 1]
+
+    extractedFrames1 = []
+    extractedFrames2 = []
+
+     # extract first, middle, and last frames for both clips
+    for frame in framesToCapture:
+        f1 = framesToCapture[frame]
+        f2 = framesToCapture[frame]
+
+        capture1.set(cv2.CAP_PROP_POS_FRAMES, f1)
+        capture2.set(cv2.CAP_PROP_POS_FRAMES, f2)
+
+        ret1, frame1 = capture1.read()
+        ret2, frame2 = capture2.read()
+
+        if not ret1 or not ret2:
+            print(f"Failed to read frame pair {i+1}")
+            continue
+
+        extractedFrames1.append(frame1)
+        extractedFrames2.append(frame2)
+
+        # Combine frames for comparison
+        combined = cv2.hconcat([frame1, frame2])
+        cv2.imshow(f"Comparison {i+1}", combined)
+        print(f"Captured pair {i+1}: Frame {f1} ({path1.name}), Frame {f2} ({path2.name})")
+
+        key = cv2.waitKey(1000) & 0xFF  # display each for 1 second
+        if key == ord('q'):
             break
-        
-        if(frameCount % 225 == 0):
-            # capture image at 1st, last, middle frame
-            # extract frame from both videos append to 2 sep lists, later iterate over both lists and perform ML to compare
-            print()
-
-        # frame tracker
-        frameCount += 1
-
-        # will remove this later
-        cv2.imshow("Processed Frame 1:", frame1)
-        cv2.imshow("Processed Frame 2:", frame2)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        cv2.destroyWindow(f"Comparison {i+1}")
 
     capture1.release()
     capture2.release()
     cv2.destroyAllWindows()
 
+    print("\nFrame extraction complete. Ready for ML comparison.")
+    return extractedFrames1, extractedFrames2
         
 def main():
     # checking if an argument (video clip) was passed into main (manual from user)
