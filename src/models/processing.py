@@ -52,13 +52,13 @@ def process(path1: Path, path2: Path):
 
         # Combine frames for comparison
         combined = cv2.hconcat([frame1, frame2])
-        cv2.imshow(f"Comparison {i+1}", combined)
-        print(f"Captured pair {i+1}: Frame {f1} ({path1.name}), Frame {f2} ({path2.name})")
+        cv2.imshow(f"Comparison {frame+1}", combined)
+        print(f"Captured pair {frame+1}: Frame {f1} ({path1.name}), Frame {f2} ({path2.name})")
 
         key = cv2.waitKey(1000) & 0xFF  # display each for 1 second
         if key == ord('q'):
             break
-        cv2.destroyWindow(f"Comparison {i+1}")
+        cv2.destroyWindow(f"Comparison {frame+1}")
 
     capture1.release()
     capture2.release()
