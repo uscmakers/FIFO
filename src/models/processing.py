@@ -44,9 +44,10 @@ def process(path1: Path, path2: Path):
         ret2, frame2 = capture2.read()
 
         if not ret1 or not ret2:
-            print(f"Failed to read frame pair {i+1}")
+            print(f"Failed to read frame pair {frame+1}")
             continue
-
+        
+        # for ML comparison
         extractedFrames1.append(frame1)
         extractedFrames2.append(frame2)
 
@@ -56,7 +57,7 @@ def process(path1: Path, path2: Path):
         print(f"Captured pair {frame+1}: Frame {f1} ({path1.name}), Frame {f2} ({path2.name})")
 
         key = cv2.waitKey(1000) & 0xFF  # display each for 1 second
-        if key == ord('q'):
+        if key == ord('q'): # stop processing
             break
         cv2.destroyWindow(f"Comparison {frame+1}")
 
