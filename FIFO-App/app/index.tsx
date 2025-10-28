@@ -1,120 +1,84 @@
-import {Alert, Button, View} from "react-native";
-import {useCallback} from "react";
+import React, { useCallback } from "react";
+import { Alert, Button, View, ActivityIndicator } from "react-native";
 import {
   BarcodeScannerScreenConfiguration,
-  SingleScanningMode, 
+  SingleScanningMode,
   MultipleScanningMode,
-  BarcodeFormat
 } from "react-native-scanbot-barcode-scanner-sdk";
-
-
 import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";
 
 export default function Index() {
+  const fetchProductFromOpenFoodFacts = async (barcode: string) => {
+    try {
+      const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+      const data = await response.json();
+
+      if (data.status === 1) {
+        const product = data.product;
+        Alert.alert(
+          "Product Found 🎉",
+          `Name: ${product.product_name || "Unknown"}\nBrand: ${product.brands || "Unknown"}\nNutri-Score: ${product.nutriscore_grade?.toUpperCase() || "N/A"}`
+        );
+      } else {
+        Alert.alert("Not Found", "This product is not in the Open Food Facts database.");
+      }
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      Alert.alert("Error", "Failed to fetch product information.");
+    }
+  };
 
   const onSingleBarcodeScan = useCallback(async () => {
     try {
-      /** Check license status and return early if the license is not valid */
-       if (!(await ScanbotBarcodeSDK.getLicenseInfo()).isLicenseValid) {
-        return;
-      }
-      /**
-       * Instantiate a configuration object of BarcodeScannerConfiguration and
-       * start the barcode scanner with the configuration
-       */
+      const licenseInfo = await ScanbotBarcodeSDK.getLicenseInfo();
+      if (!licenseInfo.isLicenseValid) return;
+
       const config = new BarcodeScannerScreenConfiguration();
-      /** Initialize the use case for single scanning */
       config.useCase = new SingleScanningMode();
-      /** Start the BarcodeScanner */
+
       const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
-      /** Handle the result if result status is OK */
-      if (result.status === 'OK' && result.data) {
-        Alert.alert(
-          "Barcode Scanning successfully!",
-          `${result.data.items.map(barcode =>
-            `Barcode value: ${barcode.barcode.text} and type: ${barcode.barcode.format}`
-          ).join("\n")}`);
+
+      if (result.status === "OK" && result.data) {
+        const barcodeValue = result.data.items[0]?.barcode.text;
+        if (barcodeValue) {
+          await fetchProductFromOpenFoodFacts(barcodeValue);
+        } else {
+          Alert.alert("Error", "No barcode detected.");
+        }
       } else {
-        console.log("The user has canceled the Barcode Scanning")
+        console.log("User canceled scanning");
       }
     } catch (e: any) {
-      console.log("An error has occurred while running Barcode Scanner", e.message);
+      console.log("An error occurred during barcode scan:", e.message);
     }
   }, []);
-  const onMultiBarcodeScan = useCallback(async () => {
-  try {
-    /** Check license status and return early if the license is not valid */
-      if (!(await ScanbotBarcodeSDK.getLicenseInfo()).isLicenseValid) {
-        return;
-      }
-    /**
-     * Instantiate a configuration object of BarcodeScannerConfiguration and
-     * start the barcode scanner with the configuration
-     */
-    const config = new BarcodeScannerScreenConfiguration();
-    /** Initialize the use case for multi-scanning */
-    config.useCase = new MultipleScanningMode();
-    /** Start the BarcodeScanner */
-    const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
-    /** Handle the result if result status is OK */
-    if (result.status === 'OK' && result.data) {
-      Alert.alert(
-        "Barcode Scanning successfully!",
-        `${result.data.items.map(barcode =>
-          `Barcode value: ${barcode.barcode.text} and type: ${barcode.barcode.format}`
-        ).join("\n")}`);
-    } else {
-      console.log("The user has canceled the Barcode Scanning")
-    }
-  } catch (e: any) {
-    console.log("An error has occurred while running Barcode Scanner", e.message);
-  }
-}, []);
 
-const onAROverlayBarcodeScan = useCallback(async () => {
-  try {
-    /** Check license status and return early if the license is not valid */
-     if (!(await ScanbotBarcodeSDK.getLicenseInfo()).isLicenseValid) {
-        return;
+  const onMultiBarcodeScan = useCallback(async () => {
+    try {
+      const licenseInfo = await ScanbotBarcodeSDK.getLicenseInfo();
+      if (!licenseInfo.isLicenseValid) return;
+
+      const config = new BarcodeScannerScreenConfiguration();
+      config.useCase = new MultipleScanningMode();
+
+      const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
+
+      if (result.status === "OK" && result.data) {
+        const barcodes = result.data.items.map(i => i.barcode.text);
+        Alert.alert("Scanned Barcodes", barcodes.join("\n"));
+        // You could also loop over barcodes and fetch OFF data for each
+      } else {
+        console.log("User canceled scanning");
       }
-    /**
-     * Instantiate a configuration object of BarcodeScannerConfiguration and
-     * start the barcode scanner with the configuration
-     */
-    const config = new BarcodeScannerScreenConfiguration();
-    /** Initialize the use case for multi-scanning */
-    config.useCase = new MultipleScanningMode();
-    /** Configure AR Overlay. */
-    config.useCase.arOverlay.visible = true;
-    config.useCase.arOverlay.automaticSelectionEnabled = false;
-    /** Start the BarcodeScanner */
-    const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
-    /** Handle the result if result status is OK */
-    if (result.status === 'OK' && result.data) {
-      Alert.alert(
-        "Barcode Scanning successfully!",
-        `${result.data.items.map(barcode =>
-          `Barcode value: ${barcode.barcode.text} and type: ${barcode.barcode.format}`
-        ).join("\n")}`);
-    } else {
-      console.log("The user has canceled the Barcode Scanning")
+    } catch (e: any) {
+      console.log("An error occurred during barcode scan:", e.message);
     }
-  } catch (e: any) {
-    console.log("An error has occurred while running Barcode Scanner", e.message);
-  }
-}, []);
+  }, []);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Button title={"Start single barcode scanning"} onPress={onSingleBarcodeScan}/>
-      <Button title={"Start multi-barcode scanning"} onPress={onMultiBarcodeScan}/>
-    <Button title={"Start AR Overlay barcode scanning"} onPress={onAROverlayBarcodeScan}/>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Button title="Start single barcode scanning" onPress={onSingleBarcodeScan} />
+      <Button title="Start multi-barcode scanning" onPress={onMultiBarcodeScan} />
     </View>
   );
 }
