@@ -104,6 +104,9 @@ def frame_difference(list1,list2):
         crop1 = img1[y:y+h, x:x+w].copy()
         crop2 = img2[y:y+h, x:x+w].copy()
 
+        crop1BGR = cv2.cvtColor(img1, cv2.COLOR_GRAY2BGR)
+        crop2BGR = cv2.cvtColor(img1, cv2.COLOR_GRAY2BGR)
+
             # Decide added/removed/moved (very simple heuristic):
             # Option A: SSIM (robust to brightness)
         
