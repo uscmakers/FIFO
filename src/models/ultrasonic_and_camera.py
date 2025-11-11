@@ -6,16 +6,15 @@ from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 
-# ==================================
+# BE SURE TO KILL CAMERA PROCESSES THAT START RUNNING UPON RESTART #
+
 # Adjustable Parameters
-# ==================================
 TRIG = 23               # GPIO pin 23 (physical pin 16)
 ECHO = 24               # GPIO pin 24 (physical pin 18)
 THRESHOLD_CM = 5.0      # Distance threshold for open/closed (cm)
 REQUIRED_READINGS = 5   # Consecutive readings to confirm open/close
 VIDEO_DURATION = 15     # Seconds to record video after door closes
 SAVE_DIR = "/home/pi/fridge_videos"  # Folder where videos are stored
-# ==================================
 
 # Ensure save directory exists
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -34,6 +33,7 @@ picam2.start()
 print("Camera initialized and ready.")
 time.sleep(2)
 
+# Distance readings from ultrasonic sensor
 def get_distance():
     """Trigger HC-SR04 and return distance in cm."""
     GPIO.output(TRIG, False)
