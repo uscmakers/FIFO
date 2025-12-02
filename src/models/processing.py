@@ -1,7 +1,8 @@
 import sys, cv2
 from pathlib import Path
+from collections import Counter
 import numpy as np
-
+import detectron
 # vidPairs = []
 
 # def newestMp4(dirPath: Path) -> Path:
@@ -36,6 +37,8 @@ def process(path1: Path, path2: Path):
     extractedFrames1 = []
     extractedFrames2 = []
 
+   
+
      # extract first, middle, and last frames for both clips
     for frame in framesToCapture:
         f1 = frame
@@ -56,24 +59,27 @@ def process(path1: Path, path2: Path):
         extractedFrames2.append(frame2)
 
         # Combine frames for comparison
-        combined = cv2.hconcat([frame1, frame2])
-        cv2.imshow(f"Comparison", combined)
+        #combined = cv2.hconcat([frame1, frame2])
+        # cv2.imshow(f"Comparison", combined)
         # print(f"Captured pair: Frame {f1} ({path1.name}), Frame {f2} ({path2.name})")
 
-        key = cv2.waitKey(1000) & 0xFF  # display each for 1 second
-        if key == ord('q'): # stop processing
-            break
-        cv2.destroyWindow("Comparison")
+        # key = cv2.waitKey(1000) & 0xFF  # display each for 1 second
+        # if key == ord('q'): # stop processing
+        #     break
+        # cv2.destroyWindow("Comparison")
 
     capture1.release()
     capture2.release()
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
     print("\nFrame extraction complete. Ready for ML comparison.")
     return extractedFrames1, extractedFrames2
 
 def frame_difference(list1,list2):
+    inventory_counter = Counter()
+    assert len(list1)==len(list2)
     for i in range(len(list1)):
+         #frames must be same length
         img1 = list1[i] #what does list[i] return? the path?
         img2 = list2[i]
 
@@ -82,34 +88,63 @@ def frame_difference(list1,list2):
 
         diff = cv2.absdiff(gray1, gray2)
 
-        _,thresh = cv2.threshold(diff, 0 ,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        _,thresh = cv2.threshold(diff, 0 ,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, np.ones((3,3),np.uint8), iterations=1)
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8), iterations=1)
         #if the thresh is at a certain level continue because we dont want to waste compute on similar frames
+        H, W = thresh.shape
+        border = 4
+        thresh[:border,:] = 0; 
+        thresh[-border:,:] = 0; 
+        thresh[:,:border] = 0; 
+        thresh[:,-border:]=0
 
         cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-        H, W = thresh.shape
-        border = 4
-        thresh[:border,:] = 0; thresh[-border:,:] = 0; thresh[:,:border] = 0; thresh[:,-border:]=0
+        
+        mask = np.zeros_like(thresh)
         for c in cnts:
             if cv2.contourArea(c) < 400:
                 continue
-            x,y,w,h = cv2.boundingRect(c)
-            cv2.rectangle(img1, (x,y), (x+w, y+h), (0,0,255),2)
-            cv2.rectangle(img2, (x,y), (x+w, y+h), (0, 0, 255),2)
+            cv2.drawContours(mask, [c], -1, 255, thickness=cv2.FILLED)
+            # x,y,w,h = cv2.boundingRect(c)
+            # cv2.rectangle(img1, (x,y), (x+w, y+h), (0,0,255),2)
+            # cv2.rectangle(img2, (x,y), (x+w, y+h), (0, 0, 255),2)
         #instead of drawing a bounding rect, how can I extract the bounded image from both images as new images, tell the system if the item was added or removed
-        crop1 = img1[y:y+h, x:x+w].copy()
-        crop2 = img2[y:y+h, x:x+w].copy()
+            # crop1 = img1[y:y+h, x:x+w].copy()
+            # crop2 = img2[y:y+h, x:x+w].copy()
+        if H>0 and W>0:
+            total_pixels = H*W
+        else:
+            total_pixels=1
+        changed_pixels = np.count_nonzero(mask)
+        change_ratio = changed_pixels / float(total_pixels)
 
-        crop1BGR = cv2.cvtColor(img1, cv2.COLOR_GRAY2BGR)
-        crop2BGR = cv2.cvtColor(img1, cv2.COLOR_GRAY2BGR)
+        if(change_ratio<0.3):
+            print("skipping detectron for this pair")
+            continue
+        inventoryList1 = detectron.detectron_scan(img1)
+        inventoryList2 = detectron.detectron_scan(img2)
 
-            # Decide added/removed/moved (very simple heuristic):
-            # Option A: SSIM (robust to brightness)
+        count1 = Counter(inventoryList1)
+        count2 = Counter(inventoryList2)
+
+        removed = count1-count2
+        inventory_counter+=removed
+    if len(inventory_counter)==0:
+        return []
+    return list(inventory_counter.elements())
+            #pass crop1BGR and crop2BGR to detectron2 but make it rgb
+            
         
+def main():
+    l1,l2 = process("Video_1 (1).mov","Video (1).mov")
+    removed_list = frame_difference(l1,l2)
+    print("Items removed", removed_list)
+if __name__ == "__main__":
+    main()
 
 
 

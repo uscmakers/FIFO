@@ -26,45 +26,46 @@ import glob
 register_coco_instances("grocery_train",{},"dataset-export/labels.json","dataset-export/data")
 register_coco_instances("grocery_test",{},"dataset-export/test/labels.json","dataset-export/test/data")
 
-class_names=["Milk", "Cheese", "Egg", "Juice", "Salad"]
+class_names=["Milk"]
 
 grocery_metadata = MetadataCatalog.get("grocery_train")
 grocery_test_metadata = MetadataCatalog.get("grocery_test")
 
-grocery_metadata.thing_classes = class_names
-grocery_test_metadata.thing_classes = class_names
+# grocery_metadata.thing_classes = class_names
+# grocery_test_metadata.thing_classes = class_names
 
 dataset_dicts = DatasetCatalog.get("grocery_train")
 
 
 
-for d in random.sample(dataset_dicts, 3):
-    img = cv2.imread(d["file_name"])
-    visualizer = Visualizer(img[:, :, ::-1], metadata=grocery_metadata, scale=0.5)
-    vis = visualizer.draw_dataset_dict(d)
-    cv2.imshow("prediction",vis.get_image()[:, :, ::-1])
-    cv2.waitKey(0)
-cv2.destroyAllWindows()
+# for d in random.sample(dataset_dicts, 3):
+#     img = cv2.imread(d["file_name"])
+#     visualizer = Visualizer(img[:, :, ::-1], metadata=grocery_metadata, scale=0.5)
+#     vis = visualizer.draw_dataset_dict(d)
+#     cv2.imshow("prediction",vis.get_image()[:, :, ::-1])
+#     cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 cfg = get_cfg()
 cfg.merge_from_file(
    model_zoo.get_config_file("COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml")
 )
+cfg.MODEL.DEVICE = "cpu"
 cfg.DATASETS.TRAIN = ("grocery_train",)
 cfg.DATASETS.TEST = ("grocery_test",)
 
-cfg.DATALOADER.NUM_WORKERS = 2
+cfg.DATALOADER.NUM_WORKERS = 0
 cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
    "COCO-Detection/faster_rcnn_X_101_32x8d_FPN_3x.yaml"
 )  # Let training initialize from model zoo
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.001
-cfg.SOLVER.MAX_ITER = 2000 #adjust up if val mAP is still rising, adjust down if overfit
+cfg.SOLVER.MAX_ITER = 200 #adjust up if val mAP is still rising, adjust down if overfit
 cfg.SOLVER.STEPS = []
 
 
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 64
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = 5
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(grocery_metadata.thing_classes)
 
 cfg.OUTPUT_DIR = "./output"
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)

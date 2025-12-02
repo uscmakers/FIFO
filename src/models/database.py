@@ -229,20 +229,38 @@
 #     dataset_type = fo.types.COCODetectionDataset
 # )
 # #use dataset.add_images_dir(my_images_dir) to add our own fridge images
-
+import os
 import fiftyone as fo
 import fiftyone.zoo as foz
+import fiftyone.types as fot
+from fiftyone import ViewField as F
 
-dataset = foz.load_zoo_dataset(
-    "open-images-v7",
-    split="train",
-    label_types=["detections"],
-    classes=["Milk", "Cheese", "Egg", "Juice", "Salad"],  # butter not boxable
-    max_samples=500,
+DATASET_DIR = "milk_data"
+IMAGES_DIR = DATASET_DIR
+LABELS_JSON = os.path.join(DATASET_DIR, "_annotations.coco.json")
+
+#target_classes = ["Milk", "Cheese", "Egg (Food)", "Juice", "Salad"]
+dataset = fo.Dataset.from_dir(
+    dataset_type = fot.COCODetectionDataset,
+    data_path = IMAGES_DIR,
+    labels_path = LABELS_JSON,
+    name="MILK"
 )
+# foz.load_zoo_dataset(
+#     "open-images-v7",
+#     split="train",
+#     label_types=["detections"],
+#     classes=target_classes,  # butter not boxable
+#     max_samples=500,
+# )
 
 print("Dataset loaded:", dataset.name, "with", len(dataset), "samples")
 
+# dataset = dataset.filter_labels(
+#     "ground_truth",
+#     F("label").is_in(target_classes),
+# )
+# dataset = dataset.exists("ground_truth.detections")
 # ---- REPLACE random_split WITH THIS ----
 # Shuffle for randomness
 dataset.shuffle(seed=51)  # seed optional, just for reproducibility
@@ -259,12 +277,12 @@ print("Train:", len(train_view), "Test:", len(test_view))
 
 train_view.export(
     export_dir="dataset-export",
-    dataset_type=fo.types.COCODetectionDataset,
+    dataset_type=fot.COCODetectionDataset,
 )
 
 test_view.export(
     export_dir="dataset-export/test",
-    dataset_type=fo.types.COCODetectionDataset,
+    dataset_type=fot.COCODetectionDataset,
 )
 
 # use dataset.add_images_dir(my_images_dir) to add our own fridge images
