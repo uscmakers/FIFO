@@ -7,7 +7,6 @@ import {
 import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";
 import { Product } from "../src/types/Product";
 import { styles } from "../src/styles/indexStyles";
-import { saveProductToFirestore } from "../src/firebase/firestore";
 
 export default function Index() {
   const [showExpiryModal, setShowExpiryModal] = useState(false);
@@ -155,7 +154,7 @@ export default function Index() {
             
             <TextInput
               style={styles.input}
-              placeholder="MM/DD/YYYY"
+              placeholder="MM/DD/YYYY or DD/MM/YYYY"
               value={expiryDate}
               onChangeText={setExpiryDate}
               autoFocus
@@ -202,7 +201,7 @@ export default function Index() {
               <Text style={styles.label}>Product Name *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Organic Milk"
+                placeholder="e.g., Organic Milk"
                 value={manualName}
                 onChangeText={setManualName}
                 autoFocus
@@ -211,7 +210,7 @@ export default function Index() {
               <Text style={styles.label}>Brand (Optional)</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Horizon"
+                placeholder="e.g., Horizon"
                 value={manualBrand}
                 onChangeText={setManualBrand}
               />
@@ -219,7 +218,7 @@ export default function Index() {
               <Text style={styles.label}>Barcode (Optional)</Text>
               <TextInput
                 style={styles.input}
-                placeholder="1234567890"
+                placeholder="e.g., 1234567890"
                 value={manualBarcode}
                 onChangeText={setManualBarcode}
                 keyboardType="numeric"
@@ -228,7 +227,7 @@ export default function Index() {
               <Text style={styles.label}>Expiration Date *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="MM/DD/YYYY"
+                placeholder="MM/DD/YYYY or DD/MM/YYYY"
                 value={manualExpiry}
                 onChangeText={setManualExpiry}
               />
