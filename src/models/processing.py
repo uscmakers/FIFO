@@ -3,13 +3,16 @@ from pathlib import Path
 from collections import Counter
 import numpy as np
 import detectron
-# vidPairs = []
+vidPairs = []
 
-# def newestMp4(dirPath: Path) -> Path:
-#     files = list(dirPath.glob("*.mp4"))
-#     if not files:
-#         raise FileNotFoundError("No .mp4 files found")
-#     return max(files, key=lambda p: p.stat().st_mtime) # find latest mp4 file
+def Mp4(dirPath: Path):
+    vidPairs.append(dirPath)
+    if(len(vidPairs)==2):
+        frames1, frames2 = process(vidPairs[0], vidPairs[1])
+        removed = frame_difference(frames1, frames2)
+        print("Items removed:", removed)
+        vidPairs.pop(0)
+    
 
 def process(path1: Path, path2: Path):
     frameCount = 0
@@ -139,12 +142,12 @@ def frame_difference(list1,list2):
             #pass crop1BGR and crop2BGR to detectron2 but make it rgb
             
         
-def main():
-    l1,l2 = process("Video_1 (1).mov","Video (1).mov")
-    removed_list = frame_difference(l1,l2)
-    print("Items removed", removed_list)
-if __name__ == "__main__":
-    main()
+# def main():
+    # l1,l2 = process("Video_1 (1).mov","Video (1).mov")
+    # removed_list = frame_difference(l1,l2)
+    # print("Items removed", removed_list)
+# if __name__ == "__main__":
+#     main()
 
 
 
