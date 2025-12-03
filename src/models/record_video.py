@@ -51,7 +51,7 @@ from collections import deque
 import tempfile, time, datetime as dt
 
 
-from models.processing import process # import the process function
+from models.processing import Mp4 # import the process function
 
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
@@ -59,7 +59,7 @@ from picamera2.outputs import FfmpegOutput #mp4 cotainer needs ffmpeg
 
 RESOLUTION = (1920,1080)
 FPS = 30
-RECORD_SECONDS = 4 #fix this later because our system isn't a set number of seconds
+RECORD_SECONDS = 15 #fix this later because our system isn't a set number of seconds
 CLIP_DIR = Path(tempfile.gettempdir())/"pi_clips"
 CLIP_DIR.mkdir(parents=True, exists = True)
 
@@ -116,12 +116,12 @@ def main():
             ultrasonic.trigger_function()
             clip = capture_event(cam)
             print(f"saved: {clip}")
-
-            last_two.append(clip)
-            if len(last_two) ==2:
-                prev, curr = last_two[0], last_two[1]
-                print(f"comparing {prev.name} and {curr.name}")
-                process(prev, curr) #from processing.py to get parsed
+            Mp4(clip)
+            # last_two.append(clip)
+            # if len(last_two) ==2:
+            #     prev, curr = last_two[0], last_two[1]
+            #     print(f"comparing {prev.name} and {curr.name}")
+            #     process(prev, curr) #from processing.py to get parsed
     except KeyboardInterrupt:
         print("Exiting from issues")
     finally:
