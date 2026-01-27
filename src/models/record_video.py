@@ -117,11 +117,7 @@ def main():
             clip = capture_event(cam)
             print(f"saved: {clip}")
             Mp4(clip)
-            # last_two.append(clip)
-            # if len(last_two) ==2:
-            #     prev, curr = last_two[0], last_two[1]
-            #     print(f"comparing {prev.name} and {curr.name}")
-            #     process(prev, curr) #from processing.py to get parsed
+            
     except KeyboardInterrupt:
         print("Exiting from issues")
     finally:
