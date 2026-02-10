@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Alert, Button, View, Modal, TextInput, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { Alert, View, Modal, TextInput, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import {
   BarcodeScannerScreenConfiguration,
   SingleScanningMode,
@@ -7,20 +7,23 @@ import {
 import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";
 import { Product } from "../src/types/Product";
 import { styles } from "../src/styles/scannerStyles";
+import { saveProductToFirestore } from "../src/firebase/firestore";
 
 export default function Index() {
   const [showExpiryModal, setShowExpiryModal] = useState(false);
   const [showManualInputModal, setShowManualInputModal] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [expiryDate, setExpiryDate] = useState("");
-  
+  const [isSaving, setIsSaving] = useState(false);
+
   // Manual input fields
   const [manualName, setManualName] = useState("");
   const [manualBrand, setManualBrand] = useState("");
   const [manualBarcode, setManualBarcode] = useState("");
   const [manualExpiry, setManualExpiry] = useState("");
 
-  const saveProduct = (product: Product, customExpiry: string | null = null) => {
+  // Save product to Firestore
+  const saveProduct = async (product: Product, customExpiry: string | null = null) => {
     const productData = {
       name: product.product_name || "Unknown",
       brand: product.brands || "Unknown",
@@ -29,11 +32,21 @@ export default function Index() {
       addedAt: new Date().toISOString(),
     };
 
-    console.log("Product saved:", productData);
-    Alert.alert(
-      "Product Saved ✅",
-      `${productData.name}\nExpires: ${productData.expirationDate}`
-    );
+    setIsSaving(true);
+    try {
+      await saveProductToFirestore(productData);
+      
+      console.log("Product saved to Firestore:", productData);
+      Alert.alert(
+        "Product Saved ✅",
+        `${productData.name}\nExpires: ${productData.expirationDate}`
+      );
+    } catch (error) {
+      console.error("Error saving product:", error);
+      Alert.alert("Error", "Failed to save product. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExpirySubmit = () => {
@@ -41,7 +54,7 @@ export default function Index() {
       Alert.alert("Error", "Please enter an expiration date");
       return;
     }
-    
+
     if (currentProduct) {
       saveProduct(currentProduct, expiryDate);
     }
@@ -69,7 +82,7 @@ export default function Index() {
     };
 
     saveProduct(manualProduct, null);
-    
+
     // Clear form and close modal
     setShowManualInputModal(false);
     setManualName("");
@@ -85,7 +98,7 @@ export default function Index() {
 
       if (data.status === 1) {
         const product: Product = data.product;
-        
+
         if (!product.expiration_date || product.expiration_date === "N/A") {
           setCurrentProduct(product);
           setShowExpiryModal(true);
@@ -135,14 +148,21 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.mainButton} onPress={onSingleBarcodeScan}>
+      <TouchableOpacity 
+        style={styles.mainButton} 
+        onPress={onSingleBarcodeScan}
+        disabled={isSaving}
+      >
         <Text style={styles.mainButtonText}>Scan 💕</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.mainButton} onPress={onManualUserInput}>
+
+      <TouchableOpacity 
+        style={styles.mainButton} 
+        onPress={onManualUserInput}
+        disabled={isSaving}
+      >
         <Text style={styles.mainButtonText}>Input Product 🍭</Text>
       </TouchableOpacity>
-
 
       {/* Expiry Date Modal */}
       <Modal
@@ -157,15 +177,17 @@ export default function Index() {
             <Text style={styles.modalSubtitle}>
               {currentProduct?.product_name || "Product"}
             </Text>
-            
+
             <TextInput
               style={styles.input}
-              placeholder="MM/DD/YYYY or DD/MM/YYYY"
+              placeholder="MM/DD/YYYY"
+              placeholderTextColor="#999"
               value={expiryDate}
               onChangeText={setExpiryDate}
               autoFocus
+              editable={!isSaving}
             />
-            
+
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
@@ -174,15 +196,19 @@ export default function Index() {
                   setExpiryDate("");
                   setCurrentProduct(null);
                 }}
+                disabled={isSaving}
               >
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[styles.button, styles.submitButton]}
                 onPress={handleExpirySubmit}
+                disabled={isSaving}
               >
-                <Text style={[styles.buttonText, styles.submitText]}>Save</Text>
+                <Text style={[styles.buttonText, styles.submitText]}>
+                  {isSaving ? "Saving..." : "Save"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -203,41 +229,49 @@ export default function Index() {
           <View style={styles.modalContent}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>Add Product Manually</Text>
-              
+
               <Text style={styles.label}>Product Name *</Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g., Organic Milk"
+                placeholderTextColor="#999"
                 value={manualName}
                 onChangeText={setManualName}
                 autoFocus
+                editable={!isSaving}
               />
-              
+
               <Text style={styles.label}>Brand (Optional)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g., Horizon"
+                placeholderTextColor="#999"
                 value={manualBrand}
                 onChangeText={setManualBrand}
+                editable={!isSaving}
               />
-              
+
               <Text style={styles.label}>Barcode (Optional)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g., 1234567890"
+                placeholderTextColor="#999"
                 value={manualBarcode}
                 onChangeText={setManualBarcode}
                 keyboardType="numeric"
+                editable={!isSaving}
               />
-              
+
               <Text style={styles.label}>Expiration Date *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="MM/DD/YYYY or DD/MM/YYYY"
+                placeholder="MM/DD/YYYY"
+                placeholderTextColor="#999"
                 value={manualExpiry}
                 onChangeText={setManualExpiry}
+                editable={!isSaving}
               />
-              
+
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={[styles.button, styles.cancelButton]}
@@ -248,15 +282,19 @@ export default function Index() {
                     setManualBarcode("");
                     setManualExpiry("");
                   }}
+                  disabled={isSaving}
                 >
                   <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity
                   style={[styles.button, styles.submitButton]}
                   onPress={handleManualSubmit}
+                  disabled={isSaving}
                 >
-                  <Text style={[styles.buttonText, styles.submitText]}>Add Product</Text>
+                  <Text style={[styles.buttonText, styles.submitText]}>
+                    {isSaving ? "Saving..." : "Add Product"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

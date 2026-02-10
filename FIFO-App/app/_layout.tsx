@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";

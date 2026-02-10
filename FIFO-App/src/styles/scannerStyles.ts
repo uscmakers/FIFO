@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     marginVertical: 6,
   },
   mainButtonText: {
-    color: "black",
+    color: "white",
     fontSize: 18,
     fontWeight: "700",
     textAlign: "center",

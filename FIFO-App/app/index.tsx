@@ -1,8 +1,7 @@
-// app/index.tsx
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "../src/firebase/auth";
 import { styles } from "../src/styles/indexStyles"
 
