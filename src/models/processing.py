@@ -175,9 +175,9 @@ def frame_difference(list1,list2):
         
 def main():
     
-    inventoryList1 = process("Video_1 (4).mov")
+    inventoryList1 = process("Video_1 (1).mov")
     print(inventoryList1)
-    inventoryList2 = process("Video (13).mov")
+    inventoryList2 = process("Video (1).mov")
     print(inventoryList2)
     #removed_list = frame_difference(l1,l2)
     
