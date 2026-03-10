@@ -45,7 +45,7 @@ export default function Login() {
       <Text style={styles.title}>Welcome💗</Text>
       <Text style={styles.subtitle}>Log in to continue</Text>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {/* {error ? <Text style={styles.error}>{error}</Text> : null} */}
 
       <TextInput
         style={styles.input}

@@ -1,4 +1,14 @@
-import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, deleteDoc } from "firebase/firestore";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDocs, 
+  collection, 
+  query, 
+  orderBy, 
+  deleteDoc,
+  serverTimestamp 
+} from "firebase/firestore";
 import { app } from "./config";
 import { auth } from "./auth";
 
@@ -7,18 +17,23 @@ export const db = getFirestore(app);
 // Save product under: users/{uid}/products/{barcode}
 export async function saveProductToFirestore(product: any) {
   const user = auth.currentUser;
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  if (!user) throw new Error("User not authenticated");
 
-  // Use barcode as document ID, or generate a unique one if barcode is N/A
-  const docId = product.barcode !== "N/A" ? product.barcode : `manual_${Date.now()}`;
+  const docId =
+    product.barcode !== "N/A"
+      ? product.barcode
+      : `manual_${Date.now()}`;
 
   await setDoc(
     doc(db, `users/${user.uid}/products/${docId}`),
     {
-      ...product,
-      updatedAt: new Date().toISOString(),
+      name: product.name,
+      brand: product.brand,
+      barcode: product.barcode,
+      expirationDate: product.expirationDate,
+      addedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      imageUrl: product.image_url || "",
     },
     { merge: true }
   );

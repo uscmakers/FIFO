@@ -1,14 +1,13 @@
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDtlTcb5tX1ASIALxqo2g11i_O7JyM6eW8",
-  authDomain: "fifo-d8259.firebaseapp.com",
-  projectId: "fifo-d8259",
-  storageBucket: "fifo-d8259.firebasestorage.app",
-  messagingSenderId: "175573086624",
-  appId: "1:175573086624:web:4954b0f60500423cbd74c5",
-  measurementId: "G-0G5F6NT42S"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);

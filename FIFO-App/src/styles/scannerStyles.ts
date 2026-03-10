@@ -5,89 +5,99 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: 10,
+    paddingHorizontal: 30,
+    backgroundColor: "#fff",
   },
 
-  /* --- Main Home Buttons --- */
   mainButton: {
-    backgroundColor: "#FFB7CE",
+    width: "100%",
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    width: "70%",
+    backgroundColor: "#FF69B4",
+    borderRadius: 10,
     alignItems: "center",
-    elevation: 4,
-    marginVertical: 6,
+    marginTop: 10,
   },
+
   mainButtonText: {
-    color: "white",
+    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
-    textAlign: "center",
   },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
+
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 24,
-    width: "85%",
+    width: "100%",
     maxWidth: 400,
   },
+
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 6,
     textAlign: "center",
   },
+
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#666",
     marginBottom: 20,
     textAlign: "center",
   },
+
   input: {
+    width: "100%",
+    padding: 14,
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 10,
+    marginBottom: 15,
     fontSize: 16,
-    marginBottom: 12,
   },
+
   label: {
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 6,
     color: "#333",
   },
+
   buttonRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 8,
+    marginTop: 10,
   },
+
   button: {
     flex: 1,
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: "center",
   },
+
   cancelButton: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#eee",
   },
+
   submitButton: {
     backgroundColor: "#FF69B4",
   },
+
   buttonText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
+
   submitText: {
-    color: "white",
+    color: "#fff",
   },
 });
