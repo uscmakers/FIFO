@@ -1,7 +1,10 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { app } from "./config";
 
-export const auth = getAuth(app);
+// export const auth = getAuth(app);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
 export const registerUser = (email: string, password: string) =>
   createUserWithEmailAndPassword(auth, email, password);

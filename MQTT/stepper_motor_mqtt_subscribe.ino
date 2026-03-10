@@ -11,7 +11,7 @@ const char* password = "rakshetaK";
 // ===========================
 // MQTT Broker
 // ===========================
-const char* mqtt_server = "172.20.10.2"; //change based on the server
+const char* mqtt_server = "broker.hivemq.com"; //change based on the server
 
 WiFiClient espClient;
 PubSubClient client(espClient);
