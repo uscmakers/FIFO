@@ -15,9 +15,6 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
-import DateTimePicker, {
-  DateTimePickerAndroid,
-} from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { auth } from "../src/firebase/auth";
 import {
@@ -25,6 +22,7 @@ import {
   saveProductToFirestore,
   deleteProduct,
 } from "../src/firebase/firestore";
+import { generateRecipeFromFridge } from "../src/ai/gemini";
 
 export default function Home() {
   const router = useRouter();
@@ -33,132 +31,104 @@ export default function Home() {
 
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [showManualModal, setShowManualModal] = useState(false);
-  const [showDatePickerModal, setShowDatePickerModal] = useState(false);
-
   const [manualName, setManualName] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [savingManual, setSavingManual] = useState(false);
+  const [manualExpiry, setManualExpiry] = useState("");
 
-  const numColumns = width >= 1100 ? 5 : width >= 900 ? 4 : width >= 650 ? 3 : 2;
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [recipeData, setRecipeData] = useState<any>(null);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
 
-  const horizontalPadding = 20;
-  const cardGap = 16;
-  const cardWidth =
-    (width - horizontalPadding * 2 - cardGap * (numColumns - 1)) / numColumns;
+  const numColumns =
+    width >= 1100 ? 5 : width >= 900 ? 4 : width >= 650 ? 3 : 2;
+
+  const cardWidth = (width - 80) / numColumns;
 
   useEffect(() => {
     loadProducts();
   }, []);
 
   const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await getUserProducts();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error loading products:", error);
-      Alert.alert("Error", "Failed to load products.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${month}/${day}/${year}`;
-  };
-
-  const openDatePicker = () => {
-    if (Platform.OS === "android") {
-      DateTimePickerAndroid.open({
-        value: selectedDate || new Date(),
-        mode: "date",
-        onChange: (_, date) => {
-          if (date) setSelectedDate(date);
-        },
-      });
-    } else {
-      setShowDatePickerModal(true);
-    }
+    setLoading(true);
+    const data = await getUserProducts();
+    setProducts(data);
+    setLoading(false);
   };
 
   const handleManualSubmit = async () => {
-    if (!manualName.trim()) {
-      Alert.alert("Missing info", "Please enter a product name.");
+    if (!manualName.trim() || !manualExpiry.trim()) {
+      Alert.alert("Missing info", "Please enter both a name and expiration date.");
       return;
     }
 
-    if (!selectedDate) {
-      Alert.alert("Missing info", "Please choose an expiration date.");
-      return;
-    }
+    await saveProductToFirestore({
+      name: manualName.trim(),
+      expirationDate: manualExpiry.trim(),
+      brand: "Manual",
+      barcode: "N/A",
+      addedAt: new Date().toISOString(),
+    });
 
-    try {
-      setSavingManual(true);
-
-      await saveProductToFirestore({
-        name: manualName.trim(),
-        brand: "Manual",
-        barcode: "N/A",
-        expirationDate: formatDate(selectedDate),
-        addedAt: new Date().toISOString(),
-      });
-
-      setManualName("");
-      setSelectedDate(null);
-      setShowDatePickerModal(false);
-      setShowManualModal(false);
-      await loadProducts();
-    } catch (error) {
-      console.error("Error saving manual product:", error);
-      Alert.alert("Error", "Could not save the product.");
-    } finally {
-      setSavingManual(false);
-    }
+    setManualName("");
+    setManualExpiry("");
+    setShowManualModal(false);
+    loadProducts();
   };
 
-  const handleDeletePress = (productId: string, productName: string) => {
-    Alert.alert(
-      "Delete Product",
-      `Are you sure you want to delete "${productName}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteProduct(productId);
-              setProducts((prev) => prev.filter((p) => p.id !== productId));
-            } catch (error) {
-              console.error("Error deleting product:", error);
-              Alert.alert("Error", "Failed to delete the product.");
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleGamePress = () => {
-    Alert.alert("Go to the Game 🎮", 'Do you want to go to "the game"?', [
-      { text: "Cancel", style: "cancel" },
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert("Delete?", `Delete ${name}?`, [
+      { text: "Cancel" },
       {
-        text: "Go",
-        onPress: () => {
-          console.log("Game button pressed. Add Unity redirect later.");
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteProduct(id);
+          setProducts((prev) => prev.filter((p) => p.id !== id));
         },
       },
     ]);
   };
 
+  const handleGamePress = () => {
+    Alert.alert("Go to game?", "Do you want to go to the game?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Go" },
+    ]);
+  };
+
+  const handleRecipePress = () => {
+    Alert.alert("Generate recipe?", "Do you want Gemini to generate a recipe?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Generate", onPress: generateRecipe },
+    ]);
+  };
+
+  const generateRecipe = async () => {
+    const names = products.map((p) => p.name).filter(Boolean);
+    if (names.length === 0) {
+      Alert.alert("No products", "Add some products first.");
+      return;
+    }
+
+    setRecipeLoading(true);
+
+    try {
+      const result = await generateRecipeFromFridge(names);
+      setRecipeData(result);
+      setShowRecipeModal(true);
+    } catch (error) {
+      console.error("Error generating recipe:", error);
+      Alert.alert("Error", "Could not generate a recipe.");
+    } finally {
+      setRecipeLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>My Fridge 💗</Text>
           <Text style={styles.headerEmail}>{user?.email}</Text>
         </View>
@@ -167,6 +137,7 @@ export default function Home() {
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.push("/scanner")}
+            activeOpacity={0.85}
           >
             <Text style={styles.headerButtonText}>Scan</Text>
           </TouchableOpacity>
@@ -174,6 +145,7 @@ export default function Home() {
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => setShowManualModal(true)}
+            activeOpacity={0.85}
           >
             <Text style={styles.headerButtonText}>Input</Text>
           </TouchableOpacity>
@@ -183,45 +155,31 @@ export default function Home() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#F062A5" />
-          <Text style={styles.loadingText}>Loading products...</Text>
-        </View>
-      ) : products.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No products yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Use Scan or Input to add your first item.
-          </Text>
         </View>
       ) : (
         <FlatList
           data={products}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(i) => i.id}
           numColumns={numColumns}
           contentContainerStyle={{
-            padding: horizontalPadding,
+            paddingHorizontal: 20,
+            paddingTop: 18,
             paddingBottom: 120,
           }}
           columnWrapperStyle={
-            numColumns > 1
-              ? { gap: cardGap, marginBottom: cardGap }
-              : undefined
+            numColumns > 1 ? { gap: 16, marginBottom: 16 } : undefined
           }
           renderItem={({ item }) => (
             <View style={[styles.card, { width: cardWidth }]}>
               <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeletePress(item.id, item.name)}
-                hitSlop={10}
+                style={styles.delete}
+                onPress={() => handleDelete(item.id, item.name)}
               >
-                <Text style={styles.deleteButtonText}>🗑️</Text>
+                <Text style={styles.deleteText}>🗑️</Text>
               </TouchableOpacity>
 
               <Image
-                source={{
-                  uri:
-                    item.imageUrl ||
-                    "https://via.placeholder.com/200x200.png?text=Product",
-                }}
+                source={{ uri: item.imageUrl || "https://via.placeholder.com/150" }}
                 style={styles.image}
               />
 
@@ -229,106 +187,127 @@ export default function Home() {
                 {item.name}
               </Text>
               <Text style={styles.expiration} numberOfLines={1}>
-                Expires: {item.expirationDate}
+                {item.expirationDate}
               </Text>
             </View>
           )}
         />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={handleGamePress} activeOpacity={0.85}>
-        <Text style={styles.fabIcon}>🎮</Text>
-      </TouchableOpacity>
+      <View style={styles.fabRow}>
+        <TouchableOpacity style={styles.magicFab} onPress={handleRecipePress}>
+          <Text style={styles.fabEmoji}>🪄</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.fab} onPress={handleGamePress}>
+          <Text style={styles.fabEmoji}>🎮</Text>
+        </TouchableOpacity>
+      </View>
 
       <Modal visible={showManualModal} transparent animationType="fade">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>Add Product 💕</Text>
+        <View style={styles.manualOverlay}>
+          <View style={styles.manualModalContent}>
+            <Text style={styles.manualTitle}>Add Product 💕</Text>
 
-              <Text style={styles.label}>Product Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. Greek Yogurt"
-                placeholderTextColor="#999"
-                value={manualName}
-                onChangeText={setManualName}
-              />
-
-              <Text style={styles.label}>Expiration Date</Text>
-              <TouchableOpacity
-                style={styles.datePickerButton}
-                onPress={openDatePicker}
-                activeOpacity={0.85}
-              >
-                <Text
-                  style={
-                    selectedDate
-                      ? styles.datePickerButtonText
-                      : styles.datePickerPlaceholder
-                  }
-                >
-                  {selectedDate ? formatDate(selectedDate) : "Select a date"}
-                </Text>
-              </TouchableOpacity>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={() => {
-                    setShowManualModal(false);
-                    setManualName("");
-                    setSelectedDate(null);
-                    setShowDatePickerModal(false);
-                  }}
-                  disabled={savingManual}
-                >
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.button, styles.submitButton]}
-                  onPress={handleManualSubmit}
-                  disabled={savingManual}
-                >
-                  <Text style={styles.submitText}>
-                    {savingManual ? "Saving..." : "Add"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      <Modal
-        visible={showDatePickerModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDatePickerModal(false)}
-      >
-        <View style={styles.dateModalOverlay}>
-          <View style={styles.dateModalContent}>
-            <Text style={styles.modalTitle}>Choose Expiration Date</Text>
-
-            <DateTimePicker
-              value={selectedDate || new Date()}
-              mode="date"
-              display="inline"
-              onChange={(_, date) => {
-                if (date) setSelectedDate(date);
-              }}
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Name"
+              placeholderTextColor="#999"
+              value={manualName}
+              onChangeText={setManualName}
             />
 
-            <TouchableOpacity
-              style={styles.dateDoneButton}
-              onPress={() => setShowDatePickerModal(false)}
-            >
-              <Text style={styles.dateDoneButtonText}>Done</Text>
-            </TouchableOpacity>
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Expiration Date (MM/DD/YYYY)"
+              placeholderTextColor="#999"
+              value={manualExpiry}
+              onChangeText={setManualExpiry}
+            />
+
+            <View style={styles.manualButtonRow}>
+              <TouchableOpacity
+                style={[styles.manualButton, styles.manualCancelButton]}
+                onPress={() => {
+                  setShowManualModal(false);
+                  setManualName("");
+                  setManualExpiry("");
+                }}
+              >
+                <Text style={styles.manualCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.manualButton, styles.manualSubmitButton]}
+                onPress={handleManualSubmit}
+              >
+                <Text style={styles.manualSubmitText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showRecipeModal} transparent animationType="fade">
+        <View style={styles.recipeOverlay}>
+          <View style={styles.recipeModalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {recipeLoading ? (
+                <View style={styles.recipeLoadingContainer}>
+                  <ActivityIndicator size="large" color="#F062A5" />
+                  <Text style={styles.recipeLoadingText}>
+                    Making something yummy... ✨
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.recipeHeader}>
+                    <Text style={styles.recipeHeaderEmoji}>🪄</Text>
+                    <Text style={styles.recipeTitleText}>
+                      {recipeData?.recipe_name || "Recipe Magic"}
+                    </Text>
+                  </View>
+
+                  {typeof recipeData?.prep_time_minutes === "number" && (
+                    <Text style={styles.recipeMeta}>
+                      ⏱️ {recipeData.prep_time_minutes} min
+                    </Text>
+                  )}
+
+                  <View style={styles.recipeSection}>
+                    <Text style={styles.recipeSectionTitle}>🛒 Ingredients</Text>
+                    {recipeData?.ingredients?.map((item: any, index: number) => (
+                      <View key={`${item.name}-${index}`} style={styles.recipeLineRow}>
+                        <Text style={styles.recipeBullet}>•</Text>
+                        <Text style={styles.recipeLineText}>
+                          <Text style={styles.recipeQty}>{item.quantity}</Text>{" "}
+                          {item.name}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  <View style={styles.recipeSection}>
+                    <Text style={styles.recipeSectionTitle}>👩‍🍳 Steps</Text>
+                    {recipeData?.steps?.map((step: string, index: number) => (
+                      <View key={`step-${index}`} style={styles.recipeStepRow}>
+                        <View style={styles.stepNumberCircle}>
+                          <Text style={styles.recipeStepNumber}>{index + 1}</Text>
+                        </View>
+                        <Text style={styles.recipeStepText}>{step}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.closeRecipeButton}
+                    onPress={() => setShowRecipeModal(false)}
+                  >
+                    <Text style={styles.closeRecipeButtonText}>Got it 💗</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -339,47 +318,53 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EDEDED",
+    backgroundColor: "#eee",
   },
 
   header: {
     backgroundColor: "#F062A5",
     paddingTop: 60,
-    paddingBottom: 28,
-    paddingHorizontal: 40,
+    paddingBottom: 18,
+    paddingHorizontal: 24,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
 
+  headerLeft: {
+    flex: 1,
+    paddingRight: 12,
+  },
+
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
     color: "#fff",
+    fontSize: 28,
+    fontWeight: "800",
   },
 
   headerEmail: {
-    fontSize: 16,
-    color: "#fff",
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 14,
     marginTop: 4,
-    opacity: 0.9,
   },
 
   headerButtons: {
     flexDirection: "row",
-    gap: 14,
+    gap: 10,
   },
 
   headerButton: {
     backgroundColor: "#fff",
     paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    minWidth: 72,
+    alignItems: "center",
   },
 
   headerButtonText: {
     color: "#F062A5",
-    fontWeight: "700",
+    fontWeight: "800",
     fontSize: 15,
   },
 
@@ -389,225 +374,285 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#666",
-  },
-
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 30,
-  },
-
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#444",
-    marginBottom: 8,
-  },
-
-  emptySubtitle: {
-    fontSize: 16,
-    color: "#777",
-    textAlign: "center",
-  },
-
   card: {
     backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 14,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    margin: 10,
+    padding: 10,
+    borderRadius: 15,
     position: "relative",
-    minHeight: 235,
   },
 
-  deleteButton: {
+  delete: {
     position: "absolute",
-    top: 10,
     right: 10,
+    top: 10,
     zIndex: 10,
-    backgroundColor: "#FFF0F6",
-    borderRadius: 999,
-    padding: 8,
   },
 
-  deleteButtonText: {
+  deleteText: {
     fontSize: 18,
   },
 
   image: {
-    width: "100%",
-    height: 120,
+    height: 100,
     resizeMode: "contain",
-    marginBottom: 10,
-    marginTop: 6,
   },
 
   productName: {
-    fontWeight: "700",
     fontSize: 16,
+    fontWeight: "700",
     textAlign: "center",
-    color: "#222",
+    marginTop: 8,
   },
 
   expiration: {
-    color: "#F062A5",
-    marginTop: 6,
-    fontWeight: "600",
     fontSize: 14,
+    color: "#F062A5",
+    textAlign: "center",
+    marginTop: 4,
+    fontWeight: "600",
+  },
+
+  fabRow: {
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    flexDirection: "row",
+    gap: 10,
   },
 
   fab: {
-    position: "absolute",
-    bottom: 28,
-    right: 28,
     backgroundColor: "#F062A5",
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
   },
 
-  fabIcon: {
-    fontSize: 28,
-    color: "#fff",
+  magicFab: {
+    backgroundColor: "#FFB7D5",
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
-  modalOverlay: {
+  fabEmoji: {
+    fontSize: 26,
+  },
+
+  manualOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
   },
 
-  modalContent: {
+  manualModalContent: {
     width: "100%",
     maxWidth: 420,
     backgroundColor: "#fff",
-    padding: 30,
-    borderRadius: 20,
+    borderRadius: 22,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 10,
   },
 
-  modalTitle: {
+  manualTitle: {
     fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 20,
+    fontWeight: "800",
+    color: "#F062A5",
     textAlign: "center",
-    color: "#222",
+    marginBottom: 18,
   },
 
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 8,
-    color: "#333",
-  },
-
-  input: {
+  manualInput: {
     width: "100%",
     padding: 14,
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
-    marginBottom: 15,
+    marginBottom: 14,
     fontSize: 16,
     backgroundColor: "#fff",
   },
 
-  datePickerButton: {
-    width: "100%",
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    marginBottom: 15,
-  },
-
-  datePickerButtonText: {
-    fontSize: 16,
-    color: "#222",
-    fontWeight: "600",
-  },
-
-  datePickerPlaceholder: {
-    fontSize: 16,
-    color: "#999",
-    fontWeight: "500",
-  },
-
-  buttonRow: {
+  manualButtonRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 10,
+    marginTop: 6,
   },
 
-  button: {
+  manualButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
 
-  cancelButton: {
+  manualCancelButton: {
     backgroundColor: "#eee",
   },
 
-  submitButton: {
+  manualSubmitButton: {
     backgroundColor: "#F062A5",
   },
 
-  cancelText: {
-    fontWeight: "700",
+  manualCancelText: {
+    fontWeight: "800",
     color: "#333",
   },
 
-  submitText: {
-    fontWeight: "700",
+  manualSubmitText: {
+    fontWeight: "800",
     color: "#fff",
   },
 
-  dateModalOverlay: {
+  recipeOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
   },
 
-  dateModalContent: {
+  recipeModalContent: {
     width: "100%",
     maxWidth: 420,
+    maxHeight: "80%",
     backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 22,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 10,
   },
 
-  dateDoneButton: {
-    marginTop: 16,
+  recipeLoadingContainer: {
+    paddingVertical: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  recipeLoadingText: {
+    marginTop: 12,
+    color: "#666",
+    fontSize: 15,
+    textAlign: "center",
+  },
+
+  recipeHeader: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  recipeHeaderEmoji: {
+    fontSize: 30,
+    marginBottom: 6,
+  },
+
+  recipeTitleText: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#F062A5",
+    textAlign: "center",
+  },
+
+  recipeMeta: {
+    fontSize: 14,
+    color: "#777",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+
+  recipeSection: {
+    backgroundColor: "#FFF7FB",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+  },
+
+  recipeSectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#222",
+    marginBottom: 10,
+  },
+
+  recipeLineRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+
+  recipeBullet: {
+    fontSize: 16,
+    color: "#F062A5",
+    marginRight: 8,
+    lineHeight: 22,
+  },
+
+  recipeLineText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#333",
+    lineHeight: 21,
+  },
+
+  recipeQty: {
+    fontWeight: "700",
+    color: "#F062A5",
+  },
+
+  recipeStepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+
+  stepNumberCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: "#F062A5",
-    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginTop: 2,
+  },
+
+  recipeStepNumber: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 13,
+  },
+
+  recipeStepText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#333",
+    lineHeight: 21,
+  },
+
+  closeRecipeButton: {
+    marginTop: 6,
+    backgroundColor: "#F062A5",
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
   },
 
-  dateDoneButtonText: {
+  closeRecipeButtonText: {
     color: "#fff",
-    fontWeight: "700",
     fontSize: 16,
+    fontWeight: "800",
   },
 });
