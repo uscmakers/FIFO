@@ -21,7 +21,7 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email.trim(), password);
 
       // Redirect to scanning page
-      router.replace("/scanner");
+      router.replace("/home");
 
     } catch (err: any) {
       console.log("Login error:", err.message);
@@ -42,40 +42,42 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome💗</Text>
-      <Text style={styles.subtitle}>Log in to continue</Text>
+      <View style={styles.card}>
+        <Text style={styles.title}>Welcome💗</Text>
+        <Text style={styles.subtitle}>Log in to continue</Text>
 
-      {/* {error ? <Text style={styles.error}>{error}</Text> : null} */}
+        {/* {error ? <Text style={styles.error}>{error}</Text> : null} */}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#aaa"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#aaa"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#aaa"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Log In</Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Log In</Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

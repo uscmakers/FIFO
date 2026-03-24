@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyDtlTcb5tX1ASIALxqo2g11i_O7JyM6eW8</string>
+	<string></string>
 	<key>GCM_SENDER_ID</key>
-	<string>175573086624</string>
+	<string></string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
@@ -13,7 +13,7 @@
 	<key>PROJECT_ID</key>
 	<string>fifo-d8259</string>
 	<key>STORAGE_BUCKET</key>
-	<string>fifo-d8259.firebasestorage.app</string>
+	<string></string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:175573086624:ios:643f76df5c119b93bd74c5</string>
+	<string></string>
 </dict>
 </plist>

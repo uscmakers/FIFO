@@ -5,22 +5,22 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F78FCF", // bubblegum gradient base
+    backgroundColor: "#F78FCF",
   },
 
   card: {
-    width: 450,
+    width: 500,
     backgroundColor: "#fff",
-    padding: 40,
-    borderRadius: 24,
+    padding: 50,
+    borderRadius: 30,
     shadowColor: "#000",
     shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowRadius: 30,
+    elevation: 12,
   },
 
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: "700",
     textAlign: "center",
     color: "#FF69B4",
@@ -31,26 +31,31 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: 40,
+  },
+
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
   },
 
   input: {
     width: "100%",
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
     borderColor: "#E5E5E5",
-    borderRadius: 14,
-    marginBottom: 20,
+    borderRadius: 16,
+    marginBottom: 25,
     fontSize: 16,
   },
 
   button: {
     width: "100%",
-    paddingVertical: 16,
+    paddingVertical: 18,
     backgroundColor: "#FF69B4",
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: "center",
-    marginTop: 10,
   },
 
   buttonText: {
