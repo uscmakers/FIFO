@@ -98,7 +98,7 @@ export default function Home() {
   };
 
   const handleRecipePress = () => {
-    Alert.alert("Generate recipe?", "Do you want Gemini to generate a recipe?", [
+    Alert.alert("Generate recipe?", "Do you want to generate a recipe?", [
       { text: "Cancel", style: "cancel" },
       { text: "Generate", onPress: generateRecipe },
     ]);
