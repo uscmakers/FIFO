@@ -6,7 +6,6 @@ import {
 } from "react-native-scanbot-barcode-scanner-sdk";
 import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";
 import { useRouter } from "expo-router";
-import { saveProductToFirestore } from "../src/firebase/firestore";
 
 export default function ScannerScreen() {
   const router = useRouter();
@@ -22,26 +21,25 @@ export default function ScannerScreen() {
 
       const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
 
-      if (result.status === "OK" && result.data) {
-        const barcodeValue = result.data.items[0]?.barcode.text;
+      if (result.status === "OK" && result.data?.items?.length > 0) {
+        const barcodeValue = result.data.items[0]?.barcode?.text;
 
         if (barcodeValue) {
-          await saveProductToFirestore({
-            name: "Scanned Product",
-            brand: "Unknown",
-            barcode: barcodeValue,
-            expirationDate: "N/A",
-            imageUrl: "",
-            addedAt: new Date().toISOString(),
+          router.replace({
+            pathname: "/home",
+            params: {
+              openManual: "1",
+              barcode: barcodeValue,
+            },
           });
-
-          Alert.alert("Product Saved 💕");
+          return;
         }
       }
 
       router.replace("/home");
     } catch (error) {
       console.log("Scan error:", error);
+      Alert.alert("Scan error", "Could not complete the scan.");
       router.replace("/home");
     }
   };

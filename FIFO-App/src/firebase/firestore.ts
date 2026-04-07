@@ -60,3 +60,26 @@ export async function deleteProduct(productId: string) {
 
   await deleteDoc(doc(db, `users/${user.uid}/products/${productId}`));
 }
+
+export async function updateProductInFirestore(
+  productId: string,
+  updates: {
+    name: string;
+    brand: string;
+    expirationDate: string;
+  }
+) {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  await setDoc(
+    doc(db, `users/${user.uid}/products/${productId}`),
+    {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}

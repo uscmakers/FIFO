@@ -8,9 +8,7 @@ import {
   Image,
   Modal,
   TextInput,
-  KeyboardAvoidingView,
   ScrollView,
-  Platform,
   Alert,
   ActivityIndicator,
   useWindowDimensions,
@@ -21,6 +19,7 @@ import {
   getUserProducts,
   saveProductToFirestore,
   deleteProduct,
+  updateProductInFirestore,
 } from "../src/firebase/firestore";
 import { generateRecipeFromFridge } from "../src/ai/gemini";
 
@@ -34,16 +33,26 @@ export default function Home() {
 
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualName, setManualName] = useState("");
+  const [manualBrand, setManualBrand] = useState("");
   const [manualExpiry, setManualExpiry] = useState("");
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editProductId, setEditProductId] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editBrand, setEditBrand] = useState("");
+  const [editExpiry, setEditExpiry] = useState("");
 
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeData, setRecipeData] = useState<any>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
 
-  const numColumns =
-    width >= 1100 ? 5 : width >= 900 ? 4 : width >= 650 ? 3 : 2;
+  const numColumns = 4;
+  const columnGap = 12;
 
-  const cardWidth = (width - 80) / numColumns;
+  const cardWidth = 280;
+  const cardLength = 240;
+
+  const gridWidth = cardWidth * numColumns + columnGap * (numColumns - 1);
 
   useEffect(() => {
     loadProducts();
@@ -57,23 +66,80 @@ export default function Home() {
   };
 
   const handleManualSubmit = async () => {
-    if (!manualName.trim() || !manualExpiry.trim()) {
-      Alert.alert("Missing info", "Please enter both a name and expiration date.");
+    if (!manualName.trim() || !manualBrand.trim() || !manualExpiry.trim()) {
+      Alert.alert(
+        "Missing info",
+        "Please enter a name, brand, and expiration date."
+      );
       return;
     }
 
     await saveProductToFirestore({
       name: manualName.trim(),
+      brand: manualBrand.trim(),
       expirationDate: manualExpiry.trim(),
-      brand: "Manual",
       barcode: "N/A",
       addedAt: new Date().toISOString(),
     });
 
     setManualName("");
+    setManualBrand("");
     setManualExpiry("");
     setShowManualModal(false);
     loadProducts();
+  };
+
+  const openEditModal = (item: any) => {
+    setEditProductId(item.id);
+    setEditName(item.name || "");
+    setEditBrand(item.brand || "");
+    setEditExpiry(item.expirationDate || "");
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (
+      !editProductId ||
+      !editName.trim() ||
+      !editBrand.trim() ||
+      !editExpiry.trim()
+    ) {
+      Alert.alert(
+        "Missing info",
+        "Please enter a name, brand, and expiration date."
+      );
+      return;
+    }
+
+    try {
+      await updateProductInFirestore(editProductId, {
+        name: editName.trim(),
+        brand: editBrand.trim(),
+        expirationDate: editExpiry.trim(),
+      });
+
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editProductId
+            ? {
+                ...p,
+                name: editName.trim(),
+                brand: editBrand.trim(),
+                expirationDate: editExpiry.trim(),
+              }
+            : p
+        )
+      );
+
+      setShowEditModal(false);
+      setEditProductId("");
+      setEditName("");
+      setEditBrand("");
+      setEditExpiry("");
+    } catch (error) {
+      console.error("Error updating product:", error);
+      Alert.alert("Error", "Could not update the product.");
+    }
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -157,41 +223,68 @@ export default function Home() {
           <ActivityIndicator size="large" color="#F062A5" />
         </View>
       ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(i) => i.id}
-          numColumns={numColumns}
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingTop: 18,
-            paddingBottom: 120,
-          }}
-          columnWrapperStyle={
-            numColumns > 1 ? { gap: 16, marginBottom: 16 } : undefined
-          }
-          renderItem={({ item }) => (
-            <View style={[styles.card, { width: cardWidth }]}>
-              <TouchableOpacity
-                style={styles.delete}
-                onPress={() => handleDelete(item.id, item.name)}
+        <View style={styles.listShell}>
+          <FlatList
+            data={products}
+            keyExtractor={(i) => i.id}
+            numColumns={numColumns}
+            style={[styles.list, { width: gridWidth }]}
+            contentContainerStyle={{
+              paddingTop: 18,
+              paddingBottom: 120,
+            }}
+            columnWrapperStyle={{ gap: columnGap, marginBottom: 12 }}
+            renderItem={({ item }) => (
+              <View
+                style={[
+                  styles.cardWrapper,
+                  { width: cardWidth, height: cardLength },
+                ]}
               >
-                <Text style={styles.deleteText}>🗑️</Text>
-              </TouchableOpacity>
-
-              <Image
-                source={{ uri: item.imageUrl || "https://via.placeholder.com/150" }}
-                style={styles.image}
-              />
-
-              <Text style={styles.productName} numberOfLines={2}>
-                {item.name}
-              </Text>
-              <Text style={styles.expiration} numberOfLines={1}>
-                {item.expirationDate}
-              </Text>
-            </View>
-          )}
-        />
+                <View style={styles.card}>
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity
+                      style={styles.edit}
+                      onPress={() => openEditModal(item)}
+                    >
+                      <Text style={styles.editText}>✏️</Text>
+                    </TouchableOpacity>
+            
+                    <TouchableOpacity
+                      style={styles.delete}
+                      onPress={() => handleDelete(item.id, item.name)}
+                    >
+                      <Text style={styles.deleteText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
+            
+                  <Image
+                    source={
+                      item.imageUrl
+                        ? { uri: item.imageUrl }
+                        : require("../img/magenta.png")
+                    }
+                    style={styles.image}
+                  />
+            
+                  <View style={styles.cardTextArea}>
+                    <Text style={styles.productName} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+            
+                    <Text style={styles.productBrand} numberOfLines={1}>
+                      {item.brand}
+                    </Text>
+            
+                    <Text style={styles.expiration} numberOfLines={1}>
+                      {item.expirationDate}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          />
+        </View>
       )}
 
       <View style={styles.fabRow}>
@@ -219,6 +312,14 @@ export default function Home() {
 
             <TextInput
               style={styles.manualInput}
+              placeholder="Brand"
+              placeholderTextColor="#999"
+              value={manualBrand}
+              onChangeText={setManualBrand}
+            />
+
+            <TextInput
+              style={styles.manualInput}
               placeholder="Expiration Date (MM/DD/YYYY)"
               placeholderTextColor="#999"
               value={manualExpiry}
@@ -231,6 +332,7 @@ export default function Home() {
                 onPress={() => {
                   setShowManualModal(false);
                   setManualName("");
+                  setManualBrand("");
                   setManualExpiry("");
                 }}
               >
@@ -242,6 +344,60 @@ export default function Home() {
                 onPress={handleManualSubmit}
               >
                 <Text style={styles.manualSubmitText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showEditModal} transparent animationType="fade">
+        <View style={styles.manualOverlay}>
+          <View style={styles.manualModalContent}>
+            <Text style={styles.manualTitle}>Edit Product ✏️</Text>
+
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Name"
+              placeholderTextColor="#999"
+              value={editName}
+              onChangeText={setEditName}
+            />
+
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Brand"
+              placeholderTextColor="#999"
+              value={editBrand}
+              onChangeText={setEditBrand}
+            />
+
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Expiration Date (MM/DD/YYYY)"
+              placeholderTextColor="#999"
+              value={editExpiry}
+              onChangeText={setEditExpiry}
+            />
+
+            <View style={styles.manualButtonRow}>
+              <TouchableOpacity
+                style={[styles.manualButton, styles.manualCancelButton]}
+                onPress={() => {
+                  setShowEditModal(false);
+                  setEditProductId("");
+                  setEditName("");
+                  setEditBrand("");
+                  setEditExpiry("");
+                }}
+              >
+                <Text style={styles.manualCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.manualButton, styles.manualSubmitButton]}
+                onPress={handleEditSubmit}
+              >
+                <Text style={styles.manualSubmitText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -292,7 +448,9 @@ export default function Home() {
                     {recipeData?.steps?.map((step: string, index: number) => (
                       <View key={`step-${index}`} style={styles.recipeStepRow}>
                         <View style={styles.stepNumberCircle}>
-                          <Text style={styles.recipeStepNumber}>{index + 1}</Text>
+                          <Text style={styles.recipeStepNumber}>
+                            {index + 1}
+                          </Text>
                         </View>
                         <Text style={styles.recipeStepText}>{step}</Text>
                       </View>
@@ -374,43 +532,91 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  listShell: {
+    flex: 1,
+    alignItems: "center",
+  },
+
+  list: {
+    alignSelf: "center",
+  },
+
+  cardWrapper: {
+    flexGrow: 0,
+    paddingLeft: 5,
+    paddingRight: 5,
+    paddingBottom: 10,
+  },
+
   card: {
     backgroundColor: "#fff",
-    margin: 10,
-    padding: 10,
     borderRadius: 15,
     position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    padding: 0,
   },
-
-  delete: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-    zIndex: 10,
-  },
-
-  deleteText: {
-    fontSize: 18,
-  },
-
+  
   image: {
-    height: 100,
-    resizeMode: "contain",
+    width: "100%",
+    height: 130,
+    resizeMode: "cover",
   },
-
+  
+  cardTextArea: {
+    paddingHorizontal: 10,
+    paddingTop: 20,
+    paddingBottom: 10,
+    flex: 1,
+  },
+  
   productName: {
     fontSize: 16,
     fontWeight: "700",
     textAlign: "center",
-    marginTop: 8,
+    marginTop: 0,
   },
-
+  
+  productBrand: {
+    fontSize: 13,
+    color: "#777",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  
   expiration: {
     fontSize: 14,
     color: "#F062A5",
     textAlign: "center",
     marginTop: 4,
     fontWeight: "600",
+  },
+
+  actionRow: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    zIndex: 10,
+  },
+
+  edit: {
+    padding: 2,
+  },
+
+  editText: {
+    fontSize: 18,
+  },
+
+  delete: {
+    padding: 2,
+  },
+
+  deleteText: {
+    fontSize: 18,
   },
 
   fabRow: {
