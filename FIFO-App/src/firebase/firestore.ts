@@ -42,7 +42,7 @@ export async function getUserProducts() {
 
   const q = query(
     collection(db, `users/${user.uid}/products`),
-    orderBy("addedAt", "desc")
+    orderBy("expirationDate", "asc")
   );
 
   const snapshot = await getDocs(q);
