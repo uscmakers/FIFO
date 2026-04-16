@@ -1,0 +1,4 @@
+# Firebase API Keys
+*.json
+**/serviceAccountKey.json
+**/serviceAccountKey.json.meta
