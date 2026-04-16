@@ -20,11 +20,7 @@ public class StreakManager : MonoBehaviour
 
     void Start()
     {
-        // fill dayStreak with DISPLAY_NUM # objects initially
-        for(int i=0;i<DISPLAY_NUM;i++)
-        {
-            AddDay(Status.Empty);
-        }
+        AddDay(Status.Empty, DISPLAY_NUM);
     }
 
     /// <summary>
@@ -43,6 +39,25 @@ public class StreakManager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// Adds numDays # of days of the inputted status to the stored dayStreak list. 
+    /// Pops oldest element(s) if dayStreak reaches over DISPLAY_NUM # of days.
+    /// </summary>
+    /// <param name="dayStatus">the status of the days being added</param>
+    /// <param name="numDays">number of days to add</param>
+    /// <returns>true if any days were popped, false otherwise</returns>
+    public bool AddDay(Status dayStatus, int numDays)
+    {
+        bool poppedItem = false;
+
+        for(int i=0;i<numDays;i++)
+        {
+            if(AddDay(dayStatus)) poppedItem = true;
+        }
+
+        return poppedItem;
     }
 
     // apply the appearance dictated by the status to the object
