@@ -1,14 +1,24 @@
+
+
 public class ProductItem
 {
-    public Time addedAt; 
+    public System.DateTime addedAt; 
     public string brand;
     public string category; // make into enum if finite options?
-    public Date expirationDate;
+    public System.DateTime expirationDate; // DateOnly doesn't exist in this version of C# :pensive:
     public string imageURL;
     public string name;
-    public Time updatedAt; 
+    public System.DateTime updatedAt; 
 }
 
+
+
+
+// I wrote all of this to have a custom Date and Time storing system, but Microsoft has a built in one
+// keeping in case we need to copy over the ToString() I wrote or something
+// rest in peace
+
+/**
 public class Date
 {
     int month;
@@ -53,3 +63,4 @@ public class Time : Date
 
     // TODO ToString() method
 }
+**/
