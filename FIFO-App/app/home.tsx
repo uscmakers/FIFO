@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
+import Feather from '@expo/vector-icons/Feather';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { auth } from "../src/firebase/auth";
 import {
@@ -344,14 +345,14 @@ export default function Home() {
                       style={styles.edit}
                       onPress={() => openEditModal(item)}
                     >
-                      <Text style={styles.editText}>✏️</Text>
+                      <Feather name="edit" size={24} color="white" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.delete}
                       onPress={() => handleDelete(item.id, item.name)}
                     >
-                      <Text style={styles.deleteText}>🗑️</Text>
+                      <Feather name="trash-2" size={24} color="white" />
                     </TouchableOpacity>
                   </View>
 

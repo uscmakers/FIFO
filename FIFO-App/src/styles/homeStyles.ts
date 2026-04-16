@@ -134,16 +134,8 @@ export const styles = StyleSheet.create({
     padding: 2,
   },
 
-  editText: {
-    fontSize: 18,
-  },
-
   delete: {
     padding: 2,
-  },
-
-  deleteText: {
-    fontSize: 18,
   },
 
   fabRow: {

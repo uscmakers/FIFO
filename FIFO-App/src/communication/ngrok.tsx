@@ -99,9 +99,20 @@ export function useNgrokSocket(onData: (data: ItemRecord[]) => void) {
       console.log("✅ Connected to Python server");
     };
 
-    socket.onmessage = (event) => {
-      console.log("📨 RAW MESSAGE TYPE:", typeof event.data);
-      console.log("📨 RAW MESSAGE VALUE:", event.data);
+    socket.onmessage = async (event) => {
+      try {
+        const parsed = JSON.parse(event.data) as ItemRecord[];
+        console.log("📨 PARSED MESSAGE:", parsed);
+
+        for (const item of parsed) {
+          await removeMatchedProduct(item);
+        }
+
+        onDataRef.current(parsed);
+      } catch (error) {
+        console.log("❌ Failed to parse WebSocket message:", error);
+        console.log("📨 RAW MESSAGE VALUE:", event.data);
+      }
     };
 
     socket.onerror = (err) => {
@@ -109,7 +120,14 @@ export function useNgrokSocket(onData: (data: ItemRecord[]) => void) {
     };
 
     socket.onclose = (event) => {
-      console.log("🔌 WebSocket closed — code:", event.code, "reason:", event.reason, "wasClean:", event.wasClean);
+      console.log(
+        "🔌 WebSocket closed — code:",
+        event.code,
+        "reason:",
+        event.reason,
+        "wasClean:",
+        event.wasClean
+      );
     };
 
     return () => {
@@ -144,5 +162,6 @@ export async function removeMatchedProduct(product: ItemRecord) {
   }
 
   await deleteProduct(matched.id);
+  console.log("✅ Removed matched product:", matched);
   return matched;
 }
