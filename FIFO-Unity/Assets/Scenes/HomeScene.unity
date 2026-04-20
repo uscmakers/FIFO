@@ -3649,7 +3649,7 @@ GameObject:
   - component: {fileID: 1593660940}
   - component: {fileID: 1593660939}
   m_Layer: 5
-  m_Name: StreakTracker
+  m_Name: StreakWidget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4548,7 +4548,7 @@ GameObject:
   - component: {fileID: 1955981469}
   - component: {fileID: 1955981468}
   m_Layer: 5
-  m_Name: ShoppingList
+  m_Name: ReceiptWidget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
