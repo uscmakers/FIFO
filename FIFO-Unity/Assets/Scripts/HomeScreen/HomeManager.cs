@@ -2,8 +2,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Takes the product data from DatabaseManagerScript and builds a list of product objects for inventory system
-public class HomeManagerScript : MonoBehaviour
+public class HomeManager : MonoBehaviour
 {
+    // make into Singleton
+    public HomeManager instance;
+
+    void Awake()
+    {
+        if(instance != null && instance != this) Destroy(instance);
+        else instance = this;
+    }
+
     [Header("References")]
     public DatabaseManagerScript databaseManager;
 
@@ -11,7 +20,7 @@ public class HomeManagerScript : MonoBehaviour
     public Transform contentParent;
 
     [Header("Runtime Product Items")]
-    public List<ProductItemScript> productItems = new List<ProductItemScript>();
+    public List<ProductItem> productItems = new List<ProductItem>();
 
     private void Start()
     {
@@ -37,49 +46,18 @@ public class HomeManagerScript : MonoBehaviour
 
     private void BuildProductItemList(List<DatabaseManagerScript.Product> products)
     {
-        ClearCurrentProductItems();
+        productItems.Clear();
 
         foreach (DatabaseManagerScript.Product product in products)
         {
-            GameObject productObject = new GameObject(product.name);
-
-            if (contentParent != null)
-            {
-                productObject.transform.SetParent(contentParent, false);
-            }
-
-            ProductItemScript productItem = productObject.AddComponent<ProductItemScript>();
-
-            productItem.SetProductData(
-                product.id,
-                product.addedAt,
-                product.brand,
-                product.category,
-                product.expirationDate,
-                product.imageUrl,
-                product.name,
-                product.updatedAt
-            );
-
+            
+            ProductItem productItem = new ProductItem(product);
             productItems.Add(productItem);
 
             Debug.Log(productItem.ToString());
         }
 
         Debug.Log("HomeManagerScript: Total ProductItemScript objects created = " + productItems.Count);
-    }
-
-    private void ClearCurrentProductItems()
-    {
-        foreach (ProductItemScript item in productItems)
-        {
-            if (item != null)
-            {
-                Destroy(item.gameObject);
-            }
-        }
-
-        productItems.Clear();
     }
 
     public void RefreshHomeProducts()

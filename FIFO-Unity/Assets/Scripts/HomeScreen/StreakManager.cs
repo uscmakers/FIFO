@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor.Search;
 using UnityEngine;
 
 public class StreakManager : MonoBehaviour
@@ -21,6 +25,39 @@ public class StreakManager : MonoBehaviour
     void Start()
     {
         AddDay(Status.Empty, DISPLAY_NUM);
+    }
+
+    public void SetStreak(List<ProductItem> products)
+    {
+        DateTime today = DateTime.Today;
+
+        // the number of days in the future to display
+        // feel free to change but MUST be less than DISPLAY_NUM
+        int daysFuture = 1;
+        DateTime startRange = today.AddDays(-(DISPLAY_NUM-1-daysFuture));
+        DateTime endRange = today.AddDays(1+daysFuture);
+
+        List<ProductItem> releventProducts = GetInDateRange(products, startRange, endRange);
+
+        
+
+    }
+
+    /// <summary>
+    /// Get a list of products that expire within the range of dates of start (inclusive) and end (exclusive).
+    /// </summary>
+    /// <param name="products">original list of products</param>
+    /// <param name="start">start date (inclusive)</param>
+    /// <param name="end">end date (exclusive)</param>
+    /// <returns>List of products that expire within date range, sorted by expiry date (expire earlier = earlier in list)</returns>
+    public List<ProductItem> GetInDateRange(List<ProductItem> products, DateTime start, DateTime end)
+    {
+        if(end <= start) return new List<ProductItem>();
+
+        IEnumerable<ProductItem> sorted = products.OrderBy(n => n.expirationDate);
+
+        
+        return new List<ProductItem>(); // METHOD NOT FINISHED :C
     }
 
     /// <summary>

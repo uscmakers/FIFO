@@ -1,19 +1,19 @@
+using System;
 using UnityEngine;
 
 // Stores data for a single Product
-public class ProductItemScript : MonoBehaviour
+public class ProductItem
 {
-    [Header("Product Data")]
     public string id;
-    public string addedAt;
+    public DateTime addedAt;
     public string brand;
     public string category;
-    public string expirationDate;
+    public DateTime expirationDate;
     public string imageUrl;
     public string productName;
-    public string updatedAt;
+    public DateTime updatedAt;
 
-    public void SetProductData(
+    public ProductItem(
         string newId,
         string newAddedAt,
         string newBrand,
@@ -25,13 +25,25 @@ public class ProductItemScript : MonoBehaviour
     )
     {
         id = newId;
-        addedAt = newAddedAt;
+        addedAt = DateTime.Parse(newAddedAt);
         brand = newBrand;
         category = newCategory;
-        expirationDate = newExpirationDate;
+        expirationDate = DateTime.Parse(newExpirationDate);
         imageUrl = newImageUrl;
         productName = newProductName;
-        updatedAt = newUpdatedAt;
+        updatedAt = DateTime.Parse(newUpdatedAt);
+    }
+
+    public ProductItem(DatabaseManagerScript.Product product)
+    {
+        id = product.id;
+        addedAt = DateTime.Parse(product.addedAt);
+        brand = product.brand;
+        category = product.category;
+        expirationDate = DateTime.Parse(product.expirationDate);
+        imageUrl = product.imageUrl;
+        productName = product.name;
+        updatedAt = DateTime.Parse(product.updatedAt);
     }
 
     public override string ToString()
