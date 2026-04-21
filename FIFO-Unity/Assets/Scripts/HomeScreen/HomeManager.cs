@@ -1,32 +1,62 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Takes the product data from DatabaseManagerScript and builds a list of product objects for inventory system
+// Takes product data from DatabaseManagerScript and builds UI product prefabs
 public class HomeManager : MonoBehaviour
 {
-    // make into Singleton
-    public HomeManager instance;
+    public static HomeManager instance;
 
     void Awake()
     {
-        if(instance != null && instance != this) Destroy(instance);
-        else instance = this;
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            instance = this;
+        }
     }
 
     [Header("References")]
     public DatabaseManagerScript databaseManager;
+    public StreakManager streakManager;   // optional, if you want to update streak too
 
-    [Header("Optional Parent For Runtime Product Objects")]
+    [Header("UI")]
     public Transform contentParent;
+    public GameObject productItemPrefab;
 
-    [Header("Runtime Product Items")]
+    [Header("Runtime Product Data")]
     public List<ProductItem> productItems = new List<ProductItem>();
 
     private void Start()
     {
         if (databaseManager == null)
         {
-            Debug.LogError("HomeManagerScript: DatabaseManagerScript reference is missing.");
+            Debug.LogError("HomeManager: DatabaseManagerScript reference is missing.");
+            return;
+        }
+
+        if (contentParent == null)
+        {
+            Debug.LogError("HomeManager: contentParent reference is missing.");
+            return;
+        }
+
+        if (productItemPrefab == null)
+        {
+            Debug.LogError("HomeManager: productItemPrefab reference is missing.");
+            return;
+        }
+
+        RefreshHomeProducts();
+    }
+
+    public void RefreshHomeProducts()
+    {
+        if (databaseManager == null)
+        {
+            Debug.LogError("HomeManager: DatabaseManagerScript reference is missing.");
             return;
         }
 
@@ -35,39 +65,52 @@ public class HomeManager : MonoBehaviour
 
     private void OnProductsLoaded(List<DatabaseManagerScript.Product> products)
     {
-        Debug.Log("HomeManagerScript: Products loaded successfully. Count = " + products.Count);
+        Debug.Log("HomeManager: Products loaded successfully. Count = " + products.Count);
         BuildProductItemList(products);
     }
 
     private void OnProductsError(string error)
     {
-        Debug.LogError("HomeManagerScript: Failed to load products. " + error);
+        Debug.LogError("HomeManager: Failed to load products. " + error);
     }
 
     private void BuildProductItemList(List<DatabaseManagerScript.Product> products)
     {
         productItems.Clear();
 
-        foreach (DatabaseManagerScript.Product product in products)
+        // delete old UI rows
+        foreach (Transform child in contentParent)
         {
-            
-            ProductItem productItem = new ProductItem(product);
-            productItems.Add(productItem);
-
-            Debug.Log(productItem.ToString());
+            Destroy(child.gameObject);
         }
 
-        Debug.Log("HomeManagerScript: Total ProductItemScript objects created = " + productItems.Count);
-    }
-
-    public void RefreshHomeProducts()
-    {
-        if (databaseManager == null)
+        // create fresh data objects + fresh UI rows
+        for (int i = 0; i < products.Count; i++)
         {
-            Debug.LogError("HomeManagerScript: DatabaseManagerScript reference is missing.");
-            return;
+            ProductItem productData = new ProductItem(products[i]);
+            productItems.Add(productData);
+
+            GameObject obj = Instantiate(productItemPrefab, contentParent);
+            ProductItemUI productUI = obj.GetComponent<ProductItemUI>();
+
+            if (productUI != null)
+            {
+                productUI.Setup(productData, i);
+            }
+            else
+            {
+                Debug.LogError("HomeManager: Prefab is missing ProductItemUI component.");
+            }
+
+            Debug.Log(productData.ToString());
         }
 
-        StartCoroutine(databaseManager.GetProducts(OnProductsLoaded, OnProductsError));
+        // optional: update streak widget too
+        if (streakManager != null)
+        {
+            streakManager.SetStreak(productItems);
+        }
+
+        Debug.Log("HomeManager: Total ProductItems created = " + productItems.Count);
     }
 }
