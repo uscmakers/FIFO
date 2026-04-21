@@ -44,5 +44,11 @@ public class ProductItemUI : MonoBehaviour
         {
             backgroundImage.color = (index % 2 == 0) ? pinkRowColor : whiteRowColor;
         }
+        // testing productitem spawning scrolling list
+        Debug.Log("Setting up product: " + product.productName + " at index " + index);
+        Debug.Log("Background image assigned? " + (backgroundImage != null));
+        
+        Debug.Log("Name text assigned? " + (nameText != null));
+        Debug.Log("Days text assigned? " + (daysLeftText != null));
     }
 }
