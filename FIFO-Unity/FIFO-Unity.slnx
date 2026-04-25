@@ -1,5 +1,5 @@
 ﻿<Solution>
   <Project Path="Volorf.Figmage.Editor.csproj" />
-  <Project Path="Volorf.Figmage.Runtime.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Volorf.Figmage.Runtime.csproj" />
 </Solution>

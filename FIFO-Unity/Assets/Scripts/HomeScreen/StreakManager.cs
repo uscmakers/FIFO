@@ -31,26 +31,26 @@ public class StreakManager : MonoBehaviour
 
         AddDay(Status.Empty, DISPLAY_NUM);
 
-        // List<ProductItem> testProducts = new();
-        // for(int i=0; i<20; i++)
-        // {
-        // testProducts.Add( 
-        // new ProductItem(
-        // "itemid" + i,
-        // DateTime.Today,
-        // "brand" + i,
-        // "category" + i,
-        // DateTime.Today.AddDays(i-10),
-        // "imgurl" + i,
-        // "name" + i,
-        // DateTime.Today
-        //  ) 
-        // );
+        List<ProductItem> testProducts = new();
+        for(int i=0; i<20; i++)
+        {
+            testProducts.Add( 
+                new ProductItem(
+                "itemid" + i,
+                DateTime.Today,
+                "brand" + i,
+                "category" + i,
+                DateTime.Today.AddDays(i-10),
+                "imgurl" + i,
+                "name" + i,
+                DateTime.Today
+                ) 
+            );
 
-            //Debug.Log(2*i-30 + " days off");
-            // }
+            Debug.Log(2*i-30 + " days off");
+            }
 
-        // SetStreak(testProducts);
+        SetStreak(testProducts);
     }
 
     public void SetStreak(List<ProductItem> products)
