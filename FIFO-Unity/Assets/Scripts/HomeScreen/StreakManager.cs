@@ -206,38 +206,29 @@ public class StreakManager : MonoBehaviour
         return poppedItem;
     }
 
-    // apply the appearance dictated by the status to the object
+    // apply the appearance dictated by the status from StreakDaySystem script to the object
     private GameObject ApplyStatus(GameObject obj, Status status)
     {
         // TODO complete function
+        
+        StreakDayUI dayUI = obj.GetComponent<StreakDayUI>();
 
-        switch(status)
+        if (dayUI != null)
         {
-            case Status.Successful:
-                obj.GetComponent<UnityEngine.UI.Image>().color = Color.yellow;
-                break;
-            case Status.Unsuccessful:
-                obj.GetComponent<UnityEngine.UI.Image>().color = Color.red;
-                break;
-            case Status.Today:
-                obj.GetComponent<UnityEngine.UI.Image>().color = Color.green;
-                break;
-            case Status.Empty:
-                obj.GetComponent<UnityEngine.UI.Image>().color = Color.grey;
-                break;
-            case Status.Expires:
-                obj.GetComponent<UnityEngine.UI.Image>().color = Color.blue;
-                break;
+            dayUI.SetDay("", status);
         }
 
         return obj;
     }
 
+    // clear days function to clear old streak days once they're too old
     private void ClearDays()
     {
         foreach(GameObject day in dayStreak)
         {
             Destroy(day);
         }
+
+        dayStreak.Clear();
     }
 }
