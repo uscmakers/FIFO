@@ -1,8 +1,10 @@
 using System;
+using Unity.VisualScripting;
+using UnityEditor.ShaderGraph.Legacy;
 using UnityEngine;
 
 // Stores data for a single Product
-public class ProductItem
+public class ProductItem  : IComparable<ProductItem>
 {
     public string id;
     public DateTime addedAt;
@@ -34,6 +36,27 @@ public class ProductItem
         updatedAt = DateTime.Parse(newUpdatedAt);
     }
 
+        public ProductItem(
+        string newId,
+        DateTime newAddedAt,
+        string newBrand,
+        string newCategory,
+        DateTime newExpirationDate,
+        string newImageUrl,
+        string newProductName,
+        DateTime newUpdatedAt
+    )
+    {
+        id = newId;
+        addedAt = newAddedAt;
+        brand = newBrand;
+        category = newCategory;
+        expirationDate = newExpirationDate;
+        imageUrl = newImageUrl;
+        productName = newProductName;
+        updatedAt = newUpdatedAt;
+    }
+
     public ProductItem(DatabaseManagerScript.Product product)
     {
         id = product.id;
@@ -49,5 +72,11 @@ public class ProductItem
     public override string ToString()
     {
         return $"Product: {productName}, Brand: {brand}, Category: {category}, Expiration: {expirationDate}";
+    }
+
+    public int CompareTo(ProductItem other)
+    {
+        if(other == null) return 1;
+        return this.expirationDate.CompareTo(other.expirationDate);
     }
 }
