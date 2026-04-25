@@ -2,15 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public enum StreakDayState
-{
-    Successful,
-    Unsuccessful,
-    Today,
-    Empty,
-    Expires
-}
-
 public class StreakDayUI : MonoBehaviour
 {
     [Header("UI")]
@@ -27,7 +18,7 @@ public class StreakDayUI : MonoBehaviour
     public Sprite xIcon;
     public Sprite exclamationIcon;
 
-    public void SetDay(string dayLabel, StreakDayState state)
+    public void SetDay(string dayLabel, StreakManager.Status state)
     {
         dayText.text = dayLabel;
 
@@ -35,27 +26,27 @@ public class StreakDayUI : MonoBehaviour
 
         switch (state)
         {
-            case StreakDayState.Successful:
+            case StreakManager.Status.Successful:
                 circle.sprite = darkPinkCircle;
                 icon.sprite = checkIcon;
                 break;
 
-            case StreakDayState.Unsuccessful:
+            case StreakManager.Status.Unsuccessful:
                 circle.sprite = darkPinkCircle;
                 icon.sprite = xIcon;
                 break;
 
-            case StreakDayState.Today:
+            case StreakManager.Status.Today:
                 circle.sprite = lightPinkCircle;
                 icon.enabled = false;
                 break;
 
-            case StreakDayState.Empty:
+            case StreakManager.Status.Empty:
                 circle.sprite = lightPinkCircle;
                 icon.enabled = false;
                 break;
 
-            case StreakDayState.Expires:
+            case StreakManager.Status.Expires:
                 circle.sprite = lightPinkCircle;
                 icon.sprite = exclamationIcon;
                 break;
