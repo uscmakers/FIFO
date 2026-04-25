@@ -94,11 +94,11 @@ public class StreakManager : MonoBehaviour
             if(nextExpiry > startIndex)
             {
                 startIndex = nextExpiry;
-                AddDay(ifExpire);
+                AddDay(ifExpire, dayInd);
             }
             else
             {
-                AddDay(ifNotExpire);
+                AddDay(ifNotExpire, dayInd);
             }
 
             dayInd = dayInd.AddDays(1).Date;
@@ -177,13 +177,35 @@ public class StreakManager : MonoBehaviour
     /// <returns>true if a day was popped, false otherwise</returns>
     public bool AddDay(Status dayStatus)
     {
-        dayStreak.Add(ApplyStatus(Instantiate(dayPrefab, widgetContent), dayStatus));
+        dayStreak.Add(ApplyStatus(Instantiate(dayPrefab, widgetContent), dayStatus, ""));
 
         if(dayStreak.Count > DISPLAY_NUM)
         {
             dayStreak.RemoveAt(0);
             return true;
         }
+        return false;
+    }
+    
+    // used for the MTWTFSS display on streak
+    public bool AddDay(Status dayStatus, DateTime date)
+    {
+        string label = date.ToString("ddd")[0].ToString(); // M, T, W, etc.
+
+        dayStreak.Add(
+            ApplyStatus(
+                Instantiate(dayPrefab, widgetContent),
+                dayStatus,
+                label
+            )
+        );
+
+        if(dayStreak.Count > DISPLAY_NUM)
+        {
+            dayStreak.RemoveAt(0);
+            return true;
+        }
+
         return false;
     }
 
@@ -207,15 +229,13 @@ public class StreakManager : MonoBehaviour
     }
 
     // apply the appearance dictated by the status from StreakDaySystem script to the object
-    private GameObject ApplyStatus(GameObject obj, Status status)
+    private GameObject ApplyStatus(GameObject obj, Status status, string label)
     {
-        // TODO complete function
-        
         StreakDayUI dayUI = obj.GetComponent<StreakDayUI>();
 
         if (dayUI != null)
         {
-            dayUI.SetDay("", status);
+            dayUI.SetDay(label, status);
         }
 
         return obj;
