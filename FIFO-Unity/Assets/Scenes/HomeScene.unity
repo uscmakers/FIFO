@@ -314,7 +314,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 76 day streak
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2127,6 +2127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3b1f3055f91543408bb9a9683b59ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StreakManager
+  streakText: {fileID: 142822451}
   dayPrefab: {fileID: 1512254860025905882, guid: c084969c858bc014c8cec54a7af056d1, type: 3}
   widgetContent: {fileID: 1159623836}
 --- !u!1 &1719001255
@@ -2709,7 +2710,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HomeManagerScript
   databaseManager: {fileID: 1145467399}
-  streakManager: {fileID: 0}
+  streakManager: {fileID: 1593660941}
   contentParent: {fileID: 1030939210}
   productItemPrefab: {fileID: 7524628596184933112, guid: 9535dabac67cddd4db9db237365c27a2, type: 3}
 --- !u!4 &1929713366
