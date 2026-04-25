@@ -12,13 +12,8 @@
   <component name="ChangeListManager">
     <list default="true" id="e252965c-eeec-4702-8a0e-8ebc1cb6473b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.FIFO-Unity/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FIFO-Unity/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Figma Images/Checkmark.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Figma Images/Checkmark.png.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Figma Images/ExplainationMark.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Figma Images/ExplainationMark.png.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Figma Images/X.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Figma Images/X.png.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/StreakCircle.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Prefabs/StreakCircle.prefab" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/HomeScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/HomeScene.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/StreakManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/StreakManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/StreakDaySystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/StreakDaySystem.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

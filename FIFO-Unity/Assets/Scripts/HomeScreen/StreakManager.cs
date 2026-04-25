@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class StreakManager : MonoBehaviour
 {
+    [Header("Streak Text")]
+    [SerializeField] private TMP_Text streakText;
+    
     [SerializeField] GameObject dayPrefab;
     [SerializeField] Transform widgetContent;
     List<GameObject> dayStreak;
@@ -27,26 +31,26 @@ public class StreakManager : MonoBehaviour
 
         AddDay(Status.Empty, DISPLAY_NUM);
 
-        List<ProductItem> testProducts = new();
-        for(int i=0; i<20; i++)
-        {
-            testProducts.Add( 
-                new ProductItem(
-                "itemid" + i,
-                DateTime.Today,
-                "brand" + i,
-                "category" + i,
-                DateTime.Today.AddDays(i-10),
-                "imgurl" + i,
-                "name" + i,
-                DateTime.Today
-                ) 
-            );
+        // List<ProductItem> testProducts = new();
+        // for(int i=0; i<20; i++)
+        // {
+        // testProducts.Add( 
+        // new ProductItem(
+        // "itemid" + i,
+        // DateTime.Today,
+        // "brand" + i,
+        // "category" + i,
+        // DateTime.Today.AddDays(i-10),
+        // "imgurl" + i,
+        // "name" + i,
+        // DateTime.Today
+        //  ) 
+        // );
 
             //Debug.Log(2*i-30 + " days off");
-        }
+            // }
 
-        SetStreak(testProducts);
+        // SetStreak(testProducts);
     }
 
     public void SetStreak(List<ProductItem> products)
@@ -103,6 +107,34 @@ public class StreakManager : MonoBehaviour
 
             dayInd = dayInd.AddDays(1).Date;
         }
+        int currentStreak = CalculateCurrentStreak(products);
+
+        if (streakText != null)
+        {
+            streakText.text = currentStreak + " day streak!";
+        }
+    }
+    private int CalculateCurrentStreak(List<ProductItem> products)
+    {
+        int streak = 0;
+        DateTime day = DateTime.Today.AddDays(-1);
+
+        while (true)
+        {
+            bool expiredOnThisDay = products.Any(
+                p => p.expirationDate.Date == day.Date
+            );
+
+            if (expiredOnThisDay)
+            {
+                break;
+            }
+
+            streak++;
+            day = day.AddDays(-1);
+        }
+
+        return streak;
     }
 
     private int CheckExpireOnDay(List<ProductItem> products, DateTime targetDay, int index)
