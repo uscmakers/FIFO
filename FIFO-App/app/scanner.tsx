@@ -1,10 +1,6 @@
-import React, { useEffect } from "react";
-import { View, ActivityIndicator, Alert, StyleSheet } from "react-native";
-import {
-  BarcodeScannerScreenConfiguration,
-  SingleScanningMode,
-} from "react-native-scanbot-barcode-scanner-sdk";
-import ScanbotBarcodeSDK from "react-native-scanbot-barcode-scanner-sdk";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
 
 type LookupResult = {
@@ -18,119 +14,87 @@ function getOffImageUrl(product: any, barcode: string): string {
     product?.image_front_url,
     product?.image_url,
     product?.selected_images?.front?.display?.full?.url,
-    product?.selected_images?.front?.display?.small?.url,
-    product?.images?.selected?.front?.display?.full?.url,
-    product?.images?.selected?.front?.display?.small?.url,
-    product?.images?.selected?.front?.url,
   ];
 
   const direct = directCandidates.find(
-    (value) => typeof value === "string" && value.trim().length > 0
+    (v) => typeof v === "string" && v.trim().length > 0
   );
 
   if (direct) return direct;
 
-  const front = product?.selected_images?.front ?? product?.images?.selected?.front;
-  const rev = front?.rev;
-
-  if (rev && barcode) {
-    const padded = String(barcode).padStart(13, "0");
-    const folder = padded.replace(/(...)(...)(...)(.*)/, "$1/$2/$3/$4");
-    const lang = front?.lang || front?.lc || "en";
-
-    return `https://images.openfoodfacts.org/images/products/${folder}/front_${lang}.${rev}.full.jpg`;
-  }
-
   return "";
 }
 
-async function lookupProductByBarcode(barcode: string): Promise<LookupResult> {
+async function lookupProductByBarcode(
+  barcode: string
+): Promise<LookupResult> {
   try {
-    const response = await fetch(
+    const res = await fetch(
       `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
     );
-
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-      console.log("Lookup returned non-JSON response");
-      return { name: "", brand: "", imageUrl: "" };
-    }
-
-    const data = await response.json();
+    const data = await res.json();
     const product = data?.product ?? null;
 
-    if (!product) {
-      return { name: "", brand: "", imageUrl: "" };
-    }
-
-    const name =
-      typeof product?.product_name === "string"
-        ? product.product_name.trim()
-        : "";
-
-    const brand =
-      typeof product?.brands === "string" && product.brands.trim().length > 0
-        ? product.brands.split(",")[0].trim()
-        : "";
-
-    const imageUrl = getOffImageUrl(product, barcode);
-
-    return { name, brand, imageUrl };
-  } catch (error) {
-    console.log("Product lookup error:", error);
+    return {
+      name: product?.product_name ?? "",
+      brand: product?.brands?.split(",")[0] ?? "",
+      imageUrl: getOffImageUrl(product, barcode),
+    };
+  } catch {
     return { name: "", brand: "", imageUrl: "" };
   }
 }
 
 export default function ScannerScreen() {
   const router = useRouter();
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    startScan();
-  }, []);
+    if (!permission) return;
+    if (!permission.granted) requestPermission();
+  }, [permission]);
 
-  const startScan = async () => {
-    try {
-      const config = new BarcodeScannerScreenConfiguration();
-      config.useCase = new SingleScanningMode();
-
-      const result = await ScanbotBarcodeSDK.startBarcodeScanner(config);
-
-      if (result.status !== "OK") {
-        router.replace("/home");
-        return;
-      }
-
-      const barcodeValue = result.data.items?.[0]?.barcode?.text;
-
-      if (!barcodeValue) {
-        Alert.alert("Error", "No barcode detected.");
-        router.replace("/home");
-        return;
-      }
-
-      const product = await lookupProductByBarcode(barcodeValue);
-
-      router.replace({
-        pathname: "/home",
-        params: {
-          openManual: "1",
-          scanId: String(Date.now()),
-          prefillName: product.name,
-          prefillBrand: product.brand,
-          prefillImageUrl: product.imageUrl,
-        },
-      });
-    } catch (error) {
-      console.log("Scan error:", error);
-      Alert.alert("Scan error", "Could not complete the scan.");
-      router.replace("/home");
-    }
+  const handleScan = async ({ data }: { data: string }) => {
+    if (scanned) return;
+    setScanned(true);
+  
+    const product = await lookupProductByBarcode(data);
+  
+    router.navigate({
+      pathname: "/home",
+      params: {
+        openManual: "1",
+        scanId: String(Date.now()),
+        prefillName: product.name,
+        prefillBrand: product.brand,
+        prefillImageUrl: product.imageUrl,
+      },
+    });
   };
+
+  if (!permission) {
+    return <View style={styles.container} />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text>Camera permission required</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#F062A5" />
+      <CameraView
+        style={StyleSheet.absoluteFillObject}
+        facing="front"
+        barcodeScannerSettings={{
+          barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e"],
+        }}
+        onBarcodeScanned={handleScan}
+      />
     </View>
   );
 }
@@ -138,8 +102,5 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F062A5",
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

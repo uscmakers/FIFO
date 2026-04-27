@@ -345,14 +345,14 @@ export default function Home() {
                       style={styles.edit}
                       onPress={() => openEditModal(item)}
                     >
-                      <Feather name="edit" size={24} color="white" />
+                      <Feather name="edit" size={24} color="black" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.delete}
                       onPress={() => handleDelete(item.id, item.name)}
                     >
-                      <Feather name="trash-2" size={24} color="white" />
+                      <Feather name="trash-2" size={24} color="black" />
                     </TouchableOpacity>
                   </View>
 
@@ -360,7 +360,7 @@ export default function Home() {
                     source={
                       item.imageUrl
                         ? { uri: item.imageUrl }
-                        : require("../img/magenta.png")
+                        : require("../assets/images/magenta.png")
                     }
                     style={styles.image}
                   />
