@@ -21,6 +21,7 @@ public class StreakManager : MonoBehaviour
         Successful, // this day has passed AND nothing expired on that day
         Unsuccessful, // this day has passed BUT something expired that day
         Today, // this day is today!
+        ExpiresToday, // this day is today but something also expires today
         Empty, // this day is in the future AND nothing expires that day (OR this day is from before the user started using the app)
         Expires, // this day is in the future AND something expires that day
     }
@@ -40,7 +41,7 @@ public class StreakManager : MonoBehaviour
                 DateTime.Today,
                 "brand" + i,
                 "category" + i,
-                DateTime.Today.AddDays(i-10),
+                DateTime.Today.AddDays(3*i-10),
                 "imgurl" + i,
                 "name" + i,
                 DateTime.Today
@@ -61,7 +62,7 @@ public class StreakManager : MonoBehaviour
 
         // the number of days in the future to display
         // feel free to change but MUST be less than DISPLAY_NUM
-        int daysFuture = 3;
+        int daysFuture = 10;
         DateTime startRange = today.AddDays(-(DISPLAY_NUM-1-daysFuture)).Date;
         DateTime endRange = today.AddDays(1+daysFuture).Date;
 
@@ -91,6 +92,7 @@ public class StreakManager : MonoBehaviour
             else if(dayInd == today.Date)
             {
                 ifNotExpire = Status.Today;
+                ifExpire = Status.ExpiresToday;
             }
 
             int nextExpiry = CheckExpireOnDay(products, dayInd, startIndex);
