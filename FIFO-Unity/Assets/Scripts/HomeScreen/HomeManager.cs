@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 // Takes product data from DatabaseManagerScript and builds UI product prefabs
 public class HomeManager : MonoBehaviour
@@ -25,6 +27,11 @@ public class HomeManager : MonoBehaviour
     [Header("UI")]
     public Transform contentParent;
     public GameObject productItemPrefab;
+    public TextMeshProUGUI dateText;
+    public TextMeshProUGUI usernameText;
+    public TextMeshProUGUI itemCount;
+    public Image avatarImage;
+    public Sprite[] avatarSprites;
 
     [Header("Runtime Product Data")]
     public List<ProductItem> productItems = new List<ProductItem>();
@@ -50,6 +57,30 @@ public class HomeManager : MonoBehaviour
         }
 
         RefreshHomeProducts();
+        dateText.text = System.DateTime.Now.ToString("M/d");
+        LoadUserProfile();
+    }
+    
+    private void LoadUserProfile()
+    {
+        string username = PlayerPrefs.GetString("Username", "Player");
+        int selectedAvatar = PlayerPrefs.GetInt("SelectedAvatar", -1);
+
+        usernameText.text = username;
+
+        if (selectedAvatar >= 0 && selectedAvatar < avatarSprites.Length)
+        {
+            avatarImage.sprite = avatarSprites[selectedAvatar];
+            avatarImage.enabled = true;
+        }
+        else
+        {
+            avatarImage.enabled = false;
+            Debug.LogWarning("No valid avatar selected.");
+        }
+
+        Debug.Log("Loaded username: " + username);
+        Debug.Log("Loaded avatar index: " + selectedAvatar);
     }
 
     public void RefreshHomeProducts()
@@ -67,6 +98,7 @@ public class HomeManager : MonoBehaviour
     {
         Debug.Log("HomeManager: Products loaded successfully. Count = " + products.Count);
         BuildProductItemList(products);
+        itemCount.text = products.Count.ToString() + " items";
     }
 
     private void OnProductsError(string error)
