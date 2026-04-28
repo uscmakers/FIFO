@@ -12,6 +12,7 @@ public class StreakManager : MonoBehaviour
     
     [SerializeField] GameObject dayPrefab;
     [SerializeField] Transform widgetContent;
+    [SerializeField] ScrollRect scrollRect;
     [SerializeField] TextMeshProUGUI msgText;
     [SerializeField] TextMeshProUGUI bestStreakText;
     List<GameObject> dayStreak;
@@ -69,6 +70,7 @@ public class StreakManager : MonoBehaviour
         int daysFuture = 10;
         DateTime startRange = today.AddDays(-(DISPLAY_NUM-1-daysFuture)).Date;
         DateTime endRange = today.AddDays(1+daysFuture).Date;
+        scrollRect.horizontalNormalizedPosition = daysFuture / (float) DISPLAY_NUM;
 
         products.Sort();
 
