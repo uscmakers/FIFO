@@ -13,7 +13,9 @@ public class StreakManager : MonoBehaviour
     [SerializeField] GameObject dayPrefab;
     [SerializeField] Transform widgetContent;
     [SerializeField] TextMeshProUGUI msgText;
+    [SerializeField] TextMeshProUGUI bestStreakText;
     List<GameObject> dayStreak;
+    int highestStreak;
     private readonly int DISPLAY_NUM = 20; // number of icons to store in dayStreak
 
     // the Status of the day determines what the icon will look like
@@ -30,6 +32,7 @@ public class StreakManager : MonoBehaviour
     void Start()
     {
         dayStreak = new();
+        highestStreak = 0;
 
         AddDay(Status.Empty, DISPLAY_NUM);
 
@@ -118,6 +121,12 @@ public class StreakManager : MonoBehaviour
         }
 
         SetMessage(currentStreak);
+        
+        if(currentStreak > highestStreak)
+        {
+            highestStreak = currentStreak;
+            SetBestStreak();
+        }
     }
 
     private void SetMessage(int streak)
@@ -138,6 +147,11 @@ public class StreakManager : MonoBehaviour
         {
             msgText.text = "You're on a roll!";
         }
+    }
+
+    private void SetBestStreak()
+    {
+        bestStreakText.text = "Best Streak: " + highestStreak;
     }
 
     private int CalculateCurrentStreak(List<ProductItem> products)
