@@ -12,6 +12,7 @@ public class StreakManager : MonoBehaviour
     
     [SerializeField] GameObject dayPrefab;
     [SerializeField] Transform widgetContent;
+    [SerializeField] TextMeshProUGUI msgText;
     List<GameObject> dayStreak;
     private readonly int DISPLAY_NUM = 20; // number of icons to store in dayStreak
 
@@ -41,7 +42,7 @@ public class StreakManager : MonoBehaviour
                 DateTime.Today,
                 "brand" + i,
                 "category" + i,
-                DateTime.Today.AddDays(3*i-10),
+                DateTime.Today.AddDays(4*i-12),
                 "imgurl" + i,
                 "name" + i,
                 DateTime.Today
@@ -115,7 +116,30 @@ public class StreakManager : MonoBehaviour
         {
             streakText.text = currentStreak + " day streak!";
         }
+
+        SetMessage(currentStreak);
     }
+
+    private void SetMessage(int streak)
+    {
+        if(streak == 0)
+        {
+            msgText.text = "You can always try again :)";
+        }
+        else if (streak < 4)
+        {
+            msgText.text = "A good start!";
+        }
+        else if (streak <= 10)
+        {
+            msgText.text = "Good job!";
+        }
+        else
+        {
+            msgText.text = "You're on a roll!";
+        }
+    }
+
     private int CalculateCurrentStreak(List<ProductItem> products)
     {
         int streak = 0;
