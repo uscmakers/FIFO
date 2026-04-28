@@ -140,9 +140,13 @@ MonoBehaviour:
   dayText: {fileID: 3458022603751137687}
   darkPinkCircle: {fileID: -339645511759974857, guid: 5abc93525df9b9a458e2f643ddc3c396, type: 3}
   lightPinkCircle: {fileID: -4646876343654227710, guid: bf14b9baff85f104f89eadff7daae7f3, type: 3}
+  greyOutline: {fileID: -1011783122208788139, guid: 2389f4ce0539aaa4e89819803d7a2edb, type: 3}
+  darkPinkOutline: {fileID: 3319611883433015985, guid: 5e7271316bf109b47bf6dfcc0766cc93, type: 3}
+  lightPinkOutline: {fileID: 1342892765412122032, guid: a8f779f83c5b2b842be4ea03ca3b37da, type: 3}
   checkIcon: {fileID: 21300000, guid: f6be169f3d6d6054b9406315df3bfdbc, type: 3}
   xIcon: {fileID: 21300000, guid: 29b8672143119974a881faaa656b113d, type: 3}
-  exclamationIcon: {fileID: 21300000, guid: 17925704fc8534c46a365b09bfcfbada, type: 3}
+  greyExclamationIcon: {fileID: 21300000, guid: 00ed26f86e9139b449bfce29ca75bc6d, type: 3}
+  pinkExclamationIcon: {fileID: 21300000, guid: f55bc8fd3b4e33843a7188495d54a151, type: 3}
   normalIconSize: {x: 30, y: 30}
   exclamationIconSize: {x: 18, y: 40}
 --- !u!1 &2050557185299789680
@@ -180,7 +184,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 70}
+  m_SizeDelta: {x: 18, y: 66}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &394695189718784583
 CanvasRenderer:
@@ -210,7 +214,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 4760619577566495229, guid: f55bc8fd3b4e33843a7188495d54a151, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
