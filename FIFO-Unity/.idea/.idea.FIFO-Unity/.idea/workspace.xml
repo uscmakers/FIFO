@@ -13,7 +13,7 @@
     <list default="true" id="e252965c-eeec-4702-8a0e-8ebc1cb6473b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.FIFO-Unity/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FIFO-Unity/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/HomeScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/HomeScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/StreakManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/StreakManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/HomeManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/HomeScreen/HomeManager.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -176,6 +176,7 @@
       <workItem from="1776311189640" duration="431000" />
       <workItem from="1776741690096" duration="2300000" />
       <workItem from="1777080058243" duration="4237000" />
+      <workItem from="1777347456932" duration="2390000" />
     </task>
     <servers />
   </component>
