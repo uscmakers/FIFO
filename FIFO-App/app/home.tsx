@@ -29,6 +29,7 @@ import {
   ItemRecord,
   FridgeCategory,
 } from "../src/communication/ngrok";
+import { Linking } from "react-native"; // for deep link to unity game app
 
 const CATEGORY_OPTIONS: FridgeCategory[] = [
   "beverage",
@@ -246,7 +247,12 @@ export default function Home() {
   const handleGamePress = () => {
     Alert.alert("Go to game?", "Do you want to go to the game?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Go" },
+      {
+        text: "Go",
+        onPress: () => {
+          Linking.openURL("fifo-game://start");
+        },
+      },
     ]);
   };
 
