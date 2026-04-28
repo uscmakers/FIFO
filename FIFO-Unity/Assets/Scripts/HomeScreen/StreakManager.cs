@@ -52,8 +52,6 @@ public class StreakManager : MonoBehaviour
                 DateTime.Today
                 ) 
             );
-
-            Debug.Log(2*i-30 + " days off");
             }
 
         SetStreak(testProducts);
