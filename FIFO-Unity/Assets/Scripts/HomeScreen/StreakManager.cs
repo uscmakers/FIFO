@@ -75,7 +75,7 @@ public class StreakManager : MonoBehaviour
         products.Sort();
 
         //Debug.Log("looking for between " + startRange + " -> " + endRange);
-        var (startIndex, endIndex) = GetDateRange(products, startRange, endRange);
+        var (startIndex, endIndex) = HomeManager.GetDateRange(products, startRange, endRange);
         //Debug.Log("start: " + startIndex + "\nend: " + endIndex);
 
         DateTime dayInd = startRange.Date;
@@ -188,60 +188,7 @@ public class StreakManager : MonoBehaviour
         return index;
     }
 
-    /// <summary>
-    /// Get the start and end indices of products expire within the range of dates of start and end.
-    /// </summary>
-    /// <param name="products">original list of products</param>
-    /// <param name="start">start date (inclusive)</param>
-    /// <param name="end">end date (innclusive)</param>
-    /// <returns>Start and end indices of products that expire within the range of dates</returns>
-    public (int startIndex, int endIndex) GetDateRange(List<ProductItem> products, DateTime start, DateTime end)
-    {
-        if(end <= start) return (-1, -1);
 
-        int startInd = -1;
-
-        int low = 1;
-        int high = products.Count() - 1;
-        while(low <= high)
-        {
-            int mid = low + (high-low)/2;
-
-            if(products[mid].expirationDate >= start && products[mid-1].expirationDate < start)
-            {
-                startInd = mid; 
-                break;
-            }
-            else if(products[mid].expirationDate < start) low = mid + 1;
-            else high = mid-1;
-        }
-
-        if(startInd == -1) {
-            if(products[0].expirationDate >= start)
-            {
-                startInd = 0;
-            }
-            else return (-1, -1);
-        }
-
-        int endInd = products.Count();
-        low = startInd;
-        high = products.Count() - 1;
-        
-        while(low <= high)
-        {
-            int mid = low + (high-low)/2;
-
-            if(products[mid].expirationDate <= end && (mid == products.Count()-1 || products[mid+1].expirationDate > end)) {
-                endInd = mid;
-                break;
-            }
-            else if(products[mid].expirationDate < end) low = mid + 1;
-            else high = mid-1;
-        }
-        
-        return (startInd, endInd);
-    }
 
     /// <summary>
     /// Adds a day of the inputted status to the stored dayStreak list. 

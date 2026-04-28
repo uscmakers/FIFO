@@ -2332,6 +2332,7 @@ MonoBehaviour:
   streakText: {fileID: 142822451}
   dayPrefab: {fileID: 1512254860025905882, guid: c084969c858bc014c8cec54a7af056d1, type: 3}
   widgetContent: {fileID: 1159623836}
+  scrollRect: {fileID: 1909477105}
   msgText: {fileID: 1041190345}
   bestStreakText: {fileID: 1807623931}
 --- !u!1 &1719001255
