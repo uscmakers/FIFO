@@ -8,7 +8,10 @@ import { doc, setDoc } from "firebase/firestore";
 import { app } from "./config";
 import { db } from "./firestore";
 
-export const auth = getAuth(app);
+// export const auth = getAuth(app);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
 export const registerUser = async (email: string, password: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
