@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "175573086624",
+    "project_id": "fifo-d8259",
+    "storage_bucket": "fifo-d8259.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:175573086624:android:9ad41efecad1f26cbd74c5",
+        "android_client_info": {
+          "package_name": "com.company.fifo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBivo3TFawziFuq1m8gk5UdRJkmQeRqNjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
