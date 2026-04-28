@@ -12,7 +12,11 @@ public class StreakManager : MonoBehaviour
     
     [SerializeField] GameObject dayPrefab;
     [SerializeField] Transform widgetContent;
+    [SerializeField] ScrollRect scrollRect;
+    [SerializeField] TextMeshProUGUI msgText;
+    [SerializeField] TextMeshProUGUI bestStreakText;
     List<GameObject> dayStreak;
+    int highestStreak;
     private readonly int DISPLAY_NUM = 20; // number of icons to store in dayStreak
 
     // the Status of the day determines what the icon will look like
@@ -21,6 +25,7 @@ public class StreakManager : MonoBehaviour
         Successful, // this day has passed AND nothing expired on that day
         Unsuccessful, // this day has passed BUT something expired that day
         Today, // this day is today!
+        ExpiresToday, // this day is today but something also expires today
         Empty, // this day is in the future AND nothing expires that day (OR this day is from before the user started using the app)
         Expires, // this day is in the future AND something expires that day
     }
@@ -28,6 +33,7 @@ public class StreakManager : MonoBehaviour
     void Start()
     {
         dayStreak = new();
+        highestStreak = 0;
 
         AddDay(Status.Empty, DISPLAY_NUM);
 
@@ -40,7 +46,7 @@ public class StreakManager : MonoBehaviour
                 DateTime.Today,
                 "brand" + i,
                 "category" + i,
-                DateTime.Today.AddDays(i-10),
+                DateTime.Today.AddDays(4*i-12),
                 "imgurl" + i,
                 "name" + i,
                 DateTime.Today
@@ -61,14 +67,15 @@ public class StreakManager : MonoBehaviour
 
         // the number of days in the future to display
         // feel free to change but MUST be less than DISPLAY_NUM
-        int daysFuture = 3;
+        int daysFuture = 10;
         DateTime startRange = today.AddDays(-(DISPLAY_NUM-1-daysFuture)).Date;
         DateTime endRange = today.AddDays(1+daysFuture).Date;
+        scrollRect.horizontalNormalizedPosition = daysFuture / (float) DISPLAY_NUM;
 
         products.Sort();
 
         //Debug.Log("looking for between " + startRange + " -> " + endRange);
-        var (startIndex, endIndex) = GetDateRange(products, startRange, endRange);
+        var (startIndex, endIndex) = HomeManager.GetDateRange(products, startRange, endRange);
         //Debug.Log("start: " + startIndex + "\nend: " + endIndex);
 
         DateTime dayInd = startRange.Date;
@@ -91,6 +98,7 @@ public class StreakManager : MonoBehaviour
             else if(dayInd == today.Date)
             {
                 ifNotExpire = Status.Today;
+                ifExpire = Status.ExpiresToday;
             }
 
             int nextExpiry = CheckExpireOnDay(products, dayInd, startIndex);
@@ -113,7 +121,41 @@ public class StreakManager : MonoBehaviour
         {
             streakText.text = currentStreak + " day streak!";
         }
+
+        SetMessage(currentStreak);
+        
+        if(currentStreak > highestStreak)
+        {
+            highestStreak = currentStreak;
+            SetBestStreak();
+        }
     }
+
+    private void SetMessage(int streak)
+    {
+        if(streak == 0)
+        {
+            msgText.text = "You can always try again :)";
+        }
+        else if (streak < 4)
+        {
+            msgText.text = "A good start!";
+        }
+        else if (streak <= 10)
+        {
+            msgText.text = "Good job!";
+        }
+        else
+        {
+            msgText.text = "You're on a roll!";
+        }
+    }
+
+    private void SetBestStreak()
+    {
+        bestStreakText.text = "Best Streak: " + highestStreak;
+    }
+
     private int CalculateCurrentStreak(List<ProductItem> products)
     {
         int streak = 0;
@@ -146,60 +188,7 @@ public class StreakManager : MonoBehaviour
         return index;
     }
 
-    /// <summary>
-    /// Get the start and end indices of products expire within the range of dates of start and end.
-    /// </summary>
-    /// <param name="products">original list of products</param>
-    /// <param name="start">start date (inclusive)</param>
-    /// <param name="end">end date (innclusive)</param>
-    /// <returns>Start and end indices of products that expire within the range of dates</returns>
-    public (int startIndex, int endIndex) GetDateRange(List<ProductItem> products, DateTime start, DateTime end)
-    {
-        if(end <= start) return (-1, -1);
 
-        int startInd = -1;
-
-        int low = 1;
-        int high = products.Count() - 1;
-        while(low <= high)
-        {
-            int mid = low + (high-low)/2;
-
-            if(products[mid].expirationDate >= start && products[mid-1].expirationDate < start)
-            {
-                startInd = mid; 
-                break;
-            }
-            else if(products[mid].expirationDate < start) low = mid + 1;
-            else high = mid-1;
-        }
-
-        if(startInd == -1) {
-            if(products[0].expirationDate >= start)
-            {
-                startInd = 0;
-            }
-            else return (-1, -1);
-        }
-
-        int endInd = products.Count();
-        low = startInd;
-        high = products.Count() - 1;
-        
-        while(low <= high)
-        {
-            int mid = low + (high-low)/2;
-
-            if(products[mid].expirationDate <= end && (mid == products.Count()-1 || products[mid+1].expirationDate > end)) {
-                endInd = mid;
-                break;
-            }
-            else if(products[mid].expirationDate < end) low = mid + 1;
-            else high = mid-1;
-        }
-        
-        return (startInd, endInd);
-    }
 
     /// <summary>
     /// Adds a day of the inputted status to the stored dayStreak list. 
