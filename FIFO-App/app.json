@@ -4,23 +4,21 @@
     "slug": "FIFO",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/appicon.png",
     "scheme": "fifo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.FIFO",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "appleTeamId": "6VA6DMB345"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/appicon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -28,19 +26,26 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/appicon.png"
     },
     "plugins": [
-      "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       [
-        "react-native-scanbot-barcode-scanner-sdk",
+        "expo-build-properties",
         {
-          "iOSCameraUsageDescription": "Camera permission is needed to scan barcodes",
-          "androidCameraPermission": true,
-          "androidCameraFeature": true,
-          "mavenURLs": true
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBAuth",
+              "RNFBFirestore"
+            ]
+          }
         }
-      ]
+      ],
+      "expo-router",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
