@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 // Takes product data from DatabaseManagerScript and builds UI product prefabs
 public class HomeManager : MonoBehaviour
@@ -256,5 +257,10 @@ public class HomeManager : MonoBehaviour
         }
         
         return (startInd, endInd);
+    }
+
+    public void ToProfileScene()
+    {
+        SceneManager.LoadScene("StartScene");
     }
 }

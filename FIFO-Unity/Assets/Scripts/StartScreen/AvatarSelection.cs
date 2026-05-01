@@ -64,4 +64,16 @@ public class AvatarSelectionManager : MonoBehaviour
 
         SceneManager.LoadScene("HomeScene");
     }
+
+    void Start()
+    {
+        if(PlayerPrefs.GetString("Username", "") != "")
+        {
+            nameInput.text = PlayerPrefs.GetString("Username", "");
+        }
+        if(PlayerPrefs.GetInt("SelectedAvatar", -1) != -1)
+        {
+            SelectAvatar(PlayerPrefs.GetInt("SelectedAvatar", -1));
+        }
+    }
 }
