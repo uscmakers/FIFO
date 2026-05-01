@@ -16,7 +16,7 @@ public class AvatarSelectionManager : MonoBehaviour
         selectedAvatar = index;
 
         selectedPreview.sprite = avatarSprites[index];
-        selectedPreview.enabled = true;
+        SetPreviewAlpha(1f);
 
         Debug.Log("Selected Avatar: " + index);
     }
@@ -25,7 +25,7 @@ public class AvatarSelectionManager : MonoBehaviour
     {
         selectedAvatar = -1;
 
-        selectedPreview.enabled = false;
+        SetPreviewAlpha(0f);
 
         Debug.Log("Avatar selection cleared");
     }
@@ -64,9 +64,16 @@ public class AvatarSelectionManager : MonoBehaviour
 
         SceneManager.LoadScene("HomeScene");
     }
+    void SetPreviewAlpha(float alpha)
+    {
+        Color c = selectedPreview.color;
+        c.a = alpha;
+        selectedPreview.color = c;
+    }
 
     void Start()
     {
+        SetPreviewAlpha(0f);
         if(PlayerPrefs.GetString("Username", "") != "")
         {
             nameInput.text = PlayerPrefs.GetString("Username", "");
