@@ -3,7 +3,7 @@ using UnityEngine;
 public class AppLinkManager : MonoBehaviour
 {
     // Put your app URL here (custom scheme or universal link)
-    public string appURL = "fifo-game://start";
+    [SerializeField] string appURL = "fifo-app://start";
 
     public void OpenApp()
     {

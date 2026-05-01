@@ -2877,7 +2877,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b35be68d32624b6f8901a5091fe365d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OpenAppLink
-  appURL: fifo-game://start
+  appURL: fifo-app://start
 --- !u!224 &1725631957
 RectTransform:
   m_ObjectHideFlags: 0
