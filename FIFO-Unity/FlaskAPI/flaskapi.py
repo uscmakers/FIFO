@@ -1,14 +1,23 @@
 from flask import Flask, jsonify, request
 import firebase_admin
+import os
+import json
 from firebase_admin import credentials, firestore
 from datetime import datetime, timezone
 
 app = Flask(__name__)
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
+    service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT")
 
+    if service_account_json:
+        cred = credentials.Certificate(json.loads(service_account_json))
+    else:
+        cred = credentials.Certificate("serviceAccountKey.json")
+
+    firebase_admin.initialize_app(cred)
+    
+    
 db = firestore.client()
 
 
@@ -162,4 +171,4 @@ def delete_product(user_id, product_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)
